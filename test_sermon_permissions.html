@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار صلاحيات الخطب</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            direction: rtl;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-section h3 {
+            color: #333;
+            margin-top: 0;
+        }
+        button {
+            margin: 5px;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        .btn-admin { background-color: #e74c3c; color: white; }
+        .btn-scholar { background-color: #3498db; color: white; }
+        .btn-member { background-color: #27ae60; color: white; }
+        .btn-guest { background-color: #95a5a6; color: white; }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 3px;
+        }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <h1>اختبار صلاحيات إضافة الخطب</h1>
+    
+    <div class="test-section">
+        <h3>محاكاة أدوار المستخدمين</h3>
+        <button class="btn-admin" onclick="simulateUser('admin')">مشرف المنصة</button>
+        <button class="btn-scholar" onclick="simulateUser('scholar')">عالم</button>
+        <button class="btn-member" onclick="simulateUser('member')">خطيب</button>
+        <button class="btn-guest" onclick="simulateUser('guest')">زائر</button>
+        <button onclick="simulateUser(null)">تسجيل خروج</button>
+        <div id="user-status" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>اختبار صلاحية إضافة الخطبة</h3>
+        <button onclick="testSermonPermission()">اختبار صلاحية الخطب</button>
+        <div id="permission-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>اختبار صلاحية إضافة المحاضرة</h3>
+        <button onclick="testLecturePermission()">اختبار صلاحية المحاضرات</button>
+        <div id="lecture-permission-result" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>روابط الاختبار</h3>
+        <a href="sermons.html" target="_blank">صفحة الخطب الجاهزة</a><br>
+        <a href="add_sermon.html" target="_blank">صفحة إضافة خطبة</a><br>
+        <a href="lectures.html" target="_blank">صفحة المحاضرات والدروس</a>
+    </div>
+
+    <script>
+        // محاكاة نظام الحماية
+        window.authProtection = {
+            currentUser: null,
+            
+            isLoggedIn() {
+                return this.currentUser !== null;
+            },
+            
+            getCurrentUser() {
+                return this.currentUser;
+            },
+            
+            login(userData) {
+                this.currentUser = userData;
+                localStorage.setItem('currentUser', JSON.stringify(userData));
+            },
+            
+            logout() {
+                this.currentUser = null;
+                localStorage.removeItem('currentUser');
+            }
+        };
+        
+        // محاكاة المستخدمين
+        const users = {
+            admin: { id: 1, name: 'أحمد المدير', role: 'admin', email: 'admin@test.com' },
+            scholar: { id: 2, name: 'د. محمد العالم', role: 'scholar', email: 'scholar@test.com' },
+            member: { id: 3, name: 'علي الخطيب', role: 'member', email: 'member@test.com' },
+            guest: { id: 4, name: 'زائر', role: 'guest', email: 'guest@test.com' }
+        };
+        
+        function simulateUser(role) {
+            const statusDiv = document.getElementById('user-status');
+            
+            if (role === null) {
+                window.authProtection.logout();
+                statusDiv.innerHTML = '<span class="error">تم تسجيل الخروج</span>';
+                return;
+            }
+            
+            const user = users[role];
+            if (user) {
+                window.authProtection.login(user);
+                statusDiv.innerHTML = `<span class="success">تم تسجيل الدخول كـ: ${user.name} (${getRoleName(user.role)})</span>`;
+            }
+        }
+        
+        function getRoleName(role) {
+            const roleNames = {
+                admin: 'مشرف المنصة',
+                scholar: 'عالم',
+                member: 'خطيب',
+                guest: 'زائر'
+            };
+            return roleNames[role] || role;
+        }
+        
+        function testSermonPermission() {
+            const resultDiv = document.getElementById('permission-result');
+
+            if (!window.authProtection.isLoggedIn()) {
+                resultDiv.innerHTML = '<span class="error">❌ غير مسجل دخول - لا يمكن إضافة خطبة</span>';
+                return;
+            }
+
+            const user = window.authProtection.getCurrentUser();
+            const allowedRoles = ['admin', 'scholar', 'member'];
+
+            if (allowedRoles.includes(user.role)) {
+                resultDiv.innerHTML = `<span class="success">✅ ${user.name} لديه صلاحية إضافة الخطب</span>`;
+            } else {
+                resultDiv.innerHTML = `<span class="error">❌ ${user.name} ليس لديه صلاحية إضافة الخطب</span>`;
+            }
+        }
+
+        function testLecturePermission() {
+            const resultDiv = document.getElementById('lecture-permission-result');
+
+            if (!window.authProtection.isLoggedIn()) {
+                resultDiv.innerHTML = '<span class="error">❌ غير مسجل دخول - لا يمكن إضافة محاضرة</span>';
+                return;
+            }
+
+            const user = window.authProtection.getCurrentUser();
+            const allowedRoles = ['admin', 'scholar', 'member'];
+
+            if (allowedRoles.includes(user.role)) {
+                resultDiv.innerHTML = `<span class="success">✅ ${user.name} لديه صلاحية إضافة المحاضرات</span>`;
+            } else {
+                resultDiv.innerHTML = `<span class="error">❌ ${user.name} ليس لديه صلاحية إضافة المحاضرات</span>`;
+            }
+        }
+        
+        // تحميل المستخدم المحفوظ إن وجد
+        const savedUser = localStorage.getItem('currentUser');
+        if (savedUser) {
+            window.authProtection.currentUser = JSON.parse(savedUser);
+            const statusDiv = document.getElementById('user-status');
+            const user = window.authProtection.currentUser;
+            statusDiv.innerHTML = `<span class="success">مستخدم محفوظ: ${user.name} (${getRoleName(user.role)})</span>`;
+        }
+    </script>
+</body>
+</html>

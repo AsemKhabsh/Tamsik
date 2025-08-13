@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار إضافة المحاضرات</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            direction: rtl;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+        }
+        .btn-success {
+            background-color: #28a745;
+            color: white;
+        }
+        .btn-info {
+            background-color: #17a2b8;
+            color: white;
+        }
+        #results {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>اختبار إضافة المحاضرات</h1>
+    
+    <div class="test-section">
+        <h3>اختبار إضافة محاضرة تجريبية</h3>
+        <button class="btn-primary" onclick="addTestLecture()">إضافة محاضرة تجريبية</button>
+        <button class="btn-success" onclick="checkLocalStorage()">فحص التخزين المحلي</button>
+        <button class="btn-info" onclick="openLecturesPage()">فتح صفحة المحاضرات</button>
+    </div>
+    
+    <div id="results"></div>
+
+    <script>
+        function addTestLecture() {
+            const testLecture = {
+                id: Date.now(),
+                title: 'محاضرة تجريبية - ' + new Date().toLocaleString('ar'),
+                lecturer: 'د. محمد التجريبي',
+                province: 'صنعاء',
+                location: 'مسجد الاختبار',
+                day: 'الجمعة',
+                time: '15:00',
+                type: 'محاضرة',
+                description: 'هذه محاضرة تجريبية لاختبار النظام',
+                contact: '777123456',
+                status: 'active'
+            };
+
+            // إضافة إلى التخزين المحلي
+            const storedLectures = JSON.parse(localStorage.getItem('lectures')) || [];
+            storedLectures.push(testLecture);
+            localStorage.setItem('lectures', JSON.stringify(storedLectures));
+
+            showResult('تم إضافة المحاضرة التجريبية بنجاح!', 'success');
+        }
+
+        function checkLocalStorage() {
+            const storedLectures = JSON.parse(localStorage.getItem('lectures')) || [];
+            showResult(`عدد المحاضرات المحفوظة: ${storedLectures.length}`, 'info');
+            
+            if (storedLectures.length > 0) {
+                const lastLecture = storedLectures[storedLectures.length - 1];
+                showResult(`آخر محاضرة: ${lastLecture.title} - ${lastLecture.lecturer}`, 'info');
+            }
+        }
+
+        function openLecturesPage() {
+            window.open('/lectures.html', '_blank');
+        }
+
+        function showResult(message, type) {
+            const results = document.getElementById('results');
+            const color = type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : '#17a2b8';
+            results.innerHTML += `<div style="color: ${color}; margin: 5px 0;">${message}</div>`;
+        }
+
+        // فحص التخزين المحلي عند تحميل الصفحة
+        window.onload = function() {
+            checkLocalStorage();
+        };
+    </script>
+</body>
+</html>
