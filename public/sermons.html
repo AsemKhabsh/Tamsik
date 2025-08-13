@@ -22,7 +22,7 @@
             <div class="container">
                 <a href="index.html" class="logo">تمسيك</a>
                 <p class="slogan">"والذين يمسكون بالكتاب..."</p>
-                <button class="mobile-menu-toggle"><i class="fas fa-bars"></i></button>
+                <button class="mobile-menu-toggle" title="فتح القائمة"><i class="fas fa-bars"></i></button>
                 <ul class="nav-links">
                     <li><a href="index.html"><i class="fas fa-home"></i> الرئيسية</a></li>
                     <li><a href="sermons.html" class="active"><i class="fas fa-book-open"></i> الخطب الجاهزة</a></li>
@@ -62,7 +62,7 @@
         <section class="search-filter-section">
             <div class="search-box">
                 <input type="text" id="search-input" placeholder="ابحث عن خطبة...">
-                <button id="search-button"><i class="fas fa-search"></i></button>
+                <button id="search-button" title="بحث"><i class="fas fa-search"></i></button>
             </div>
             <div class="filter-options">
                 <div class="filter-group">
@@ -87,12 +87,28 @@
             </div>
         </section>
 
-        <!-- قسم إضافة خطبة جديدة (للأعضاء المشتركين فقط) -->
-        <section class="add-sermon-section">
-            <div class="add-sermon-card">
+        <!-- قسم إضافة خطبة جديدة (للخطباء والعلماء ومشرفي المنصة فقط) -->
+        <section class="add-sermon-section" id="add-sermon-section">
+            <!-- للمستخدمين المؤهلين (خطيب، عالم، مشرف) -->
+            <div class="add-sermon-card" id="add-sermon-authorized" style="display: none;">
                 <h2><i class="fas fa-plus-circle"></i> إضافة خطبة جديدة</h2>
                 <p>يمكنك المساهمة بإضافة خطبة جديدة لمساعدة إخوانك الخطباء</p>
                 <a href="add_sermon.html" class="btn btn-primary">إضافة خطبة</a>
+            </div>
+
+            <!-- للمستخدمين غير المؤهلين -->
+            <div class="add-sermon-card" id="add-sermon-unauthorized" style="display: none;">
+                <h2><i class="fas fa-info-circle"></i> إضافة خطبة جديدة</h2>
+                <p>إضافة الخطب متاحة للخطباء والعلماء ومشرفي المنصة فقط</p>
+                <div class="permission-info">
+                    <p><i class="fas fa-user-check"></i> للحصول على صلاحية إضافة الخطب، يرجى التواصل مع إدارة الموقع</p>
+                </div>
+            </div>
+
+            <!-- للزوار غير المسجلين -->
+            <div class="add-sermon-card" id="add-sermon-guest" style="display: none;">
+                <h2><i class="fas fa-plus-circle"></i> إضافة خطبة جديدة</h2>
+                <p>يمكنك المساهمة بإضافة خطبة جديدة لمساعدة إخوانك الخطباء</p>
                 <div class="login-note">
                     <p><i class="fas fa-info-circle"></i> يجب تسجيل الدخول أولاً للتمكن من إضافة خطبة</p>
                     <div class="login-buttons">
@@ -106,45 +122,12 @@
         <!-- قسم الخطب المميزة -->
         <section class="featured-sermons">
             <h2 class="section-title">الخطب المميزة</h2>
-            <div class="sermons-grid">
-                <div class="sermon-card featured">
-                    <div class="sermon-header">
-                        <span class="sermon-category">العقيدة</span>
-                        <span class="featured-badge"><i class="fas fa-star"></i> مميزة</span>
-                    </div>
-                    <h3 class="sermon-title">التوحيد وأثره في حياة المسلم</h3>
-                    <div class="sermon-meta">
-                        <span><i class="fas fa-user"></i> د. عبد الله الحكيمي</span>
-                        <span><i class="fas fa-calendar"></i> 15 رمضان 1444</span>
-                    </div>
-                    <p class="sermon-excerpt">خطبة تتناول مفهوم التوحيد وأهميته في حياة المسلم وكيف يؤثر على سلوكه وعباداته...</p>
-                    <div class="sermon-footer">
-                        <a href="sermon_details.html?id=1" class="btn btn-primary">قراءة الخطبة</a>
-                        <div class="sermon-stats">
-                            <span><i class="fas fa-eye"></i> 1250</span>
-                            <span><i class="fas fa-download"></i> 350</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="sermon-card featured">
-                    <div class="sermon-header">
-                        <span class="sermon-category">الأخلاق</span>
-                        <span class="featured-badge"><i class="fas fa-star"></i> مميزة</span>
-                    </div>
-                    <h3 class="sermon-title">الصدق وأثره في بناء المجتمع</h3>
-                    <div class="sermon-meta">
-                        <span><i class="fas fa-user"></i> الشيخ أحمد الشامي</span>
-                        <span><i class="fas fa-calendar"></i> 10 شعبان 1444</span>
-                    </div>
-                    <p class="sermon-excerpt">خطبة تتناول فضيلة الصدق وأهميته في بناء المجتمع المسلم وكيف يؤثر على العلاقات الاجتماعية...</p>
-                    <div class="sermon-footer">
-                        <a href="sermon_details.html?id=2" class="btn btn-primary">قراءة الخطبة</a>
-                        <div class="sermon-stats">
-                            <span><i class="fas fa-eye"></i> 980</span>
-                            <span><i class="fas fa-download"></i> 275</span>
-                        </div>
-                    </div>
+            <div class="sermons-grid featured-sermons-grid">
+                <!-- سيتم تحميل الخطب المميزة من قاعدة البيانات -->
+                <div class="empty-state" id="featured-empty-state">
+                    <i class="fas fa-star"></i>
+                    <h3>لا توجد خطب مميزة حالياً</h3>
+                    <p>سيتم عرض الخطب المميزة هنا عند إضافتها</p>
                 </div>
             </div>
         </section>
@@ -155,133 +138,20 @@
 
             <!-- تصنيفات الخطب -->
             <div class="sermon-categories">
-                <button class="category-btn active" data-category="all">الكل</button>
-                <button class="category-btn" data-category="aqeedah">العقيدة</button>
-                <button class="category-btn" data-category="fiqh">الفقه</button>
-                <button class="category-btn" data-category="akhlaq">الأخلاق</button>
-                <button class="category-btn" data-category="seerah">السيرة النبوية</button>
-                <button class="category-btn" data-category="occasions">المناسبات</button>
+                <button type="button" class="category-btn active" data-category="all">الكل</button>
+                <button type="button" class="category-btn" data-category="aqeedah">العقيدة</button>
+                <button type="button" class="category-btn" data-category="fiqh">الفقه</button>
+                <button type="button" class="category-btn" data-category="akhlaq">الأخلاق</button>
+                <button type="button" class="category-btn" data-category="seerah">السيرة النبوية</button>
+                <button type="button" class="category-btn" data-category="occasions">المناسبات</button>
             </div>
 
-            <div class="sermons-grid">
-                <!-- خطبة 1 -->
-                <div class="sermon-card">
-                    <div class="sermon-header">
-                        <span class="sermon-category">الفقه</span>
-                    </div>
-                    <h3 class="sermon-title">أحكام الصيام وآدابه</h3>
-                    <div class="sermon-meta">
-                        <span><i class="fas fa-user"></i> د. محمد الزبيدي</span>
-                        <span><i class="fas fa-calendar"></i> 1 شعبان 1444</span>
-                    </div>
-                    <p class="sermon-excerpt">خطبة تتناول أحكام الصيام وآدابه وفضائله وما ينبغي للمسلم مراعاته في شهر رمضان...</p>
-                    <div class="sermon-footer">
-                        <a href="sermon_details.html?id=3" class="btn btn-primary">قراءة الخطبة</a>
-                        <div class="sermon-stats">
-                            <span><i class="fas fa-eye"></i> 850</span>
-                            <span><i class="fas fa-download"></i> 210</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- خطبة 2 -->
-                <div class="sermon-card">
-                    <div class="sermon-header">
-                        <span class="sermon-category">السيرة النبوية</span>
-                    </div>
-                    <h3 class="sermon-title">دروس من هجرة النبي صلى الله عليه وسلم</h3>
-                    <div class="sermon-meta">
-                        <span><i class="fas fa-user"></i> الشيخ يحيى الذماري</span>
-                        <span><i class="fas fa-calendar"></i> 25 محرم 1444</span>
-                    </div>
-                    <p class="sermon-excerpt">خطبة تستعرض أهم الدروس والعبر المستفادة من هجرة النبي صلى الله عليه وسلم من مكة إلى المدينة...</p>
-                    <div class="sermon-footer">
-                        <a href="sermon_details.html?id=4" class="btn btn-primary">قراءة الخطبة</a>
-                        <div class="sermon-stats">
-                            <span><i class="fas fa-eye"></i> 720</span>
-                            <span><i class="fas fa-download"></i> 180</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- خطبة 3 -->
-                <div class="sermon-card">
-                    <div class="sermon-header">
-                        <span class="sermon-category">الأخلاق</span>
-                    </div>
-                    <h3 class="sermon-title">بر الوالدين وصلة الرحم</h3>
-                    <div class="sermon-meta">
-                        <span><i class="fas fa-user"></i> د. فاطمة الحضرمية</span>
-                        <span><i class="fas fa-calendar"></i> 15 ذو القعدة 1443</span>
-                    </div>
-                    <p class="sermon-excerpt">خطبة تتناول فضل بر الوالدين وصلة الرحم وأثرهما في حياة المسلم وفي المجتمع...</p>
-                    <div class="sermon-footer">
-                        <a href="sermon_details.html?id=5" class="btn btn-primary">قراءة الخطبة</a>
-                        <div class="sermon-stats">
-                            <span><i class="fas fa-eye"></i> 650</span>
-                            <span><i class="fas fa-download"></i> 150</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- خطبة 4 -->
-                <div class="sermon-card">
-                    <div class="sermon-header">
-                        <span class="sermon-category">العقيدة</span>
-                    </div>
-                    <h3 class="sermon-title">الإيمان بالقضاء والقدر</h3>
-                    <div class="sermon-meta">
-                        <span><i class="fas fa-user"></i> د. عبد الرحمن الصعدي</span>
-                        <span><i class="fas fa-calendar"></i> 5 صفر 1444</span>
-                    </div>
-                    <p class="sermon-excerpt">خطبة تتناول مفهوم الإيمان بالقضاء والقدر وأثره في حياة المسلم وكيفية التعامل مع المصائب...</p>
-                    <div class="sermon-footer">
-                        <a href="sermon_details.html?id=6" class="btn btn-primary">قراءة الخطبة</a>
-                        <div class="sermon-stats">
-                            <span><i class="fas fa-eye"></i> 580</span>
-                            <span><i class="fas fa-download"></i> 130</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- خطبة 5 -->
-                <div class="sermon-card">
-                    <div class="sermon-header">
-                        <span class="sermon-category">المناسبات</span>
-                    </div>
-                    <h3 class="sermon-title">فضل العشر الأوائل من ذي الحجة</h3>
-                    <div class="sermon-meta">
-                        <span><i class="fas fa-user"></i> د. سعد الإبي</span>
-                        <span><i class="fas fa-calendar"></i> 1 ذو الحجة 1443</span>
-                    </div>
-                    <p class="sermon-excerpt">خطبة تتناول فضل العشر الأوائل من ذي الحجة والأعمال المستحبة فيها وفضل يوم عرفة...</p>
-                    <div class="sermon-footer">
-                        <a href="sermon_details.html?id=7" class="btn btn-primary">قراءة الخطبة</a>
-                        <div class="sermon-stats">
-                            <span><i class="fas fa-eye"></i> 520</span>
-                            <span><i class="fas fa-download"></i> 120</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- خطبة 6 -->
-                <div class="sermon-card">
-                    <div class="sermon-header">
-                        <span class="sermon-category">الفقه</span>
-                    </div>
-                    <h3 class="sermon-title">أحكام الزكاة ومصارفها</h3>
-                    <div class="sermon-meta">
-                        <span><i class="fas fa-user"></i> د. خالد الحديدي</span>
-                        <span><i class="fas fa-calendar"></i> 20 رجب 1443</span>
-                    </div>
-                    <p class="sermon-excerpt">خطبة تتناول أحكام الزكاة وشروطها ومصارفها وأهميتها في تحقيق التكافل الاجتماعي...</p>
-                    <div class="sermon-footer">
-                        <a href="sermon_details.html?id=8" class="btn btn-primary">قراءة الخطبة</a>
-                        <div class="sermon-stats">
-                            <span><i class="fas fa-eye"></i> 480</span>
-                            <span><i class="fas fa-download"></i> 110</span>
-                        </div>
-                    </div>
+            <div class="sermons-grid all-sermons-grid">
+                <!-- سيتم تحميل الخطب من قاعدة البيانات -->
+                <div class="empty-state" id="all-sermons-empty-state">
+                    <i class="fas fa-book-open"></i>
+                    <h3>لا توجد خطب حالياً</h3>
+                    <p>سيتم عرض الخطب هنا عند إضافتها</p>
                 </div>
             </div>
 
@@ -342,10 +212,15 @@
         </div>
     </footer>
 
+    <!-- تحميل معالج الأخطاء أولاً -->
     <script src="js/error-handler.js"></script>
+
+    <!-- تحميل ملفات المصادقة -->
     <script src="js/auth.js"></script>
     <script src="js/simple-auth.js"></script>
     <script src="js/auth-protection.js"></script>
+
+    <!-- تحميل الملفات الرئيسية -->
     <script src="js/main.js"></script>
     <script src="js/sermons.js"></script>
 </body>

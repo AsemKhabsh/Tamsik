@@ -704,3 +704,72 @@
         gap: 0;
     }
 }
+
+/* قسم معلومات إضافة المحاضرات */
+.lecture-add-info {
+    margin-bottom: 25px;
+}
+
+.info-card {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 1px solid #dee2e6;
+    border-radius: 10px;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.info-content {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex: 1;
+}
+
+.info-content i {
+    font-size: 2rem;
+    color: #17a2b8;
+}
+
+.info-text h4 {
+    margin: 0 0 5px 0;
+    color: #495057;
+    font-size: 1.1rem;
+}
+
+.info-text p {
+    margin: 0;
+    color: #6c757d;
+    font-size: 0.95rem;
+}
+
+.info-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.info-actions .btn {
+    padding: 8px 16px;
+    font-size: 0.9rem;
+}
+
+/* تنسيقات متجاوبة للقسم الجديد */
+@media (max-width: 768px) {
+    .info-card {
+        flex-direction: column;
+        text-align: center;
+        gap: 15px;
+    }
+
+    .info-content {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .info-actions {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+}

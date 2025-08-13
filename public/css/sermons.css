@@ -262,3 +262,31 @@
 .notification-close:hover {
     color: #333;
 }
+
+/* أنماط الحالة الفارغة */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #777;
+    grid-column: 1 / -1; /* يمتد عبر جميع الأعمدة في الشبكة */
+}
+
+.empty-state i {
+    font-size: 4rem;
+    color: var(--primary-color);
+    margin-bottom: 20px;
+    opacity: 0.6;
+}
+
+.empty-state h3 {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+    color: var(--text-color);
+}
+
+.empty-state p {
+    font-size: 1rem;
+    color: #777;
+    max-width: 400px;
+    margin: 0 auto;
+}

@@ -10,6 +10,56 @@
     <link rel="stylesheet" href="css/responsive.css">
     <link rel="stylesheet" href="css/auth-protection.css">
 
+    <!-- أنماط إضافية للقائمة المحمولة -->
+    <style>
+        @media (max-width: 768px) {
+            .mobile-menu-toggle {
+                display: block !important;
+                background: none !important;
+                border: none !important;
+                color: #f8f9fa !important;
+                font-size: 1.5rem !important;
+                cursor: pointer !important;
+                padding: 10px !important;
+                border-radius: 4px !important;
+                transition: all 0.3s ease !important;
+            }
+
+            .nav-links {
+                display: none !important;
+                position: absolute !important;
+                top: 100% !important;
+                left: 0 !important;
+                right: 0 !important;
+                background-color: #1a3a4a !important;
+                flex-direction: column !important;
+                padding: 20px !important;
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2) !important;
+                border-radius: 0 0 8px 8px !important;
+                z-index: 9999 !important;
+            }
+
+            .nav-links.active {
+                display: flex !important;
+            }
+
+            .nav-links li {
+                margin: 0 !important;
+                margin-bottom: 10px !important;
+                width: 100% !important;
+            }
+
+            .nav-links a {
+                display: block !important;
+                width: 100% !important;
+                text-align: center !important;
+                padding: 12px 15px !important;
+                border-radius: 6px !important;
+                color: #f8f9fa !important;
+            }
+        }
+    </style>
+
     <!-- الخطوط -->
     <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Scheherazade+New:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -24,7 +74,7 @@
             <div class="container">
                 <a href="index.html" class="logo">تمسيك</a>
                 <p class="slogan">"والذين يمسكون بالكتاب..."</p>
-                <button class="mobile-menu-toggle"><i class="fas fa-bars"></i></button>
+                <button type="button" class="mobile-menu-toggle" aria-label="فتح القائمة" title="فتح القائمة"><i class="fas fa-bars"></i></button>
                 <ul class="nav-links">
                     <li><a href="index.html"><i class="fas fa-home"></i> الرئيسية</a></li>
                     <li><a href="sermons.html"><i class="fas fa-book-open"></i> الخطب الجاهزة</a></li>
@@ -640,5 +690,46 @@
 
     <!-- إضافة ملف JavaScript الخاص بالصفحة -->
     <script src="js/prepare-sermon.js"></script>
+
+    <!-- كود القائمة المحمولة المباشر -->
+    <script>
+        // التأكد من تفعيل القائمة المحمولة
+        document.addEventListener('DOMContentLoaded', function() {
+            // انتظار قليل للتأكد من تحميل كل شيء
+            setTimeout(function() {
+                const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
+                const navLinks = document.querySelector('.nav-links');
+
+                if (mobileMenuToggle && navLinks) {
+                    // إزالة أي مستمعين سابقين
+                    mobileMenuToggle.replaceWith(mobileMenuToggle.cloneNode(true));
+                    const newToggle = document.querySelector('.mobile-menu-toggle');
+
+                    newToggle.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        navLinks.classList.toggle('active');
+                    });
+
+                    // إغلاق القائمة عند النقر على رابط
+                    const navItems = document.querySelectorAll('.nav-links a');
+                    navItems.forEach(item => {
+                        item.addEventListener('click', function() {
+                            if (window.innerWidth <= 768) {
+                                navLinks.classList.remove('active');
+                            }
+                        });
+                    });
+
+                    // إعادة ضبط القائمة عند تغيير حجم النافذة
+                    window.addEventListener('resize', function() {
+                        if (window.innerWidth > 768) {
+                            navLinks.classList.remove('active');
+                        }
+                    });
+                }
+            }, 100);
+        });
+    </script>
 </body>
 </html>

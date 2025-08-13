@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار زر إضافة المحاضرة</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            direction: rtl;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: #f9f9f9;
+        }
+        .btn {
+            padding: 10px 15px;
+            margin: 5px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        .btn-primary { background-color: #007bff; color: white; }
+        .btn-success { background-color: #28a745; color: white; }
+        .btn-danger { background-color: #dc3545; color: white; }
+        .btn-warning { background-color: #ffc107; color: black; }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 3px;
+            background: #e9ecef;
+        }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .warning { background-color: #fff3cd; color: #856404; }
+    </style>
+</head>
+<body>
+    <h1>اختبار زر إضافة المحاضرة</h1>
+    
+    <div class="test-section">
+        <h3>حالة المستخدم الحالي</h3>
+        <div id="user-status" class="result">جاري التحقق...</div>
+        <button class="btn btn-primary" onclick="checkUserStatus()">تحديث حالة المستخدم</button>
+    </div>
+    
+    <div class="test-section">
+        <h3>إدارة المستخدم التجريبي</h3>
+        <button class="btn btn-success" onclick="createTestUser('admin')">إنشاء مشرف تجريبي</button>
+        <button class="btn btn-success" onclick="createTestUser('scholar')">إنشاء عالم تجريبي</button>
+        <button class="btn btn-success" onclick="createTestUser('member')">إنشاء خطيب تجريبي</button>
+        <button class="btn btn-warning" onclick="createTestUser('guest')">إنشاء زائر تجريبي</button>
+        <button class="btn btn-danger" onclick="removeTestUser()">إزالة المستخدم التجريبي</button>
+    </div>
+    
+    <div class="test-section">
+        <h3>اختبار الزر</h3>
+        <div id="button-test" class="result">
+            <p>زر إضافة المحاضرة:</p>
+            <button id="test-add-lecture-btn" class="btn btn-primary" style="display: none;">
+                <i class="fas fa-plus"></i>
+                إضافة محاضرة جديدة
+            </button>
+        </div>
+        <button class="btn btn-primary" onclick="testButtonVisibility()">اختبار ظهور الزر</button>
+    </div>
+    
+    <div class="test-section">
+        <h3>روابط الاختبار</h3>
+        <a href="lectures.html" target="_blank" class="btn btn-primary">فتح صفحة المحاضرات</a>
+        <a href="test_sermon_permissions.html" target="_blank" class="btn btn-primary">اختبار الصلاحيات العام</a>
+    </div>
+
+    <script>
+        // محاكاة نظام الحماية
+        window.authProtection = {
+            currentUser: null,
+            
+            isLoggedIn() {
+                return this.currentUser !== null;
+            },
+            
+            getCurrentUser() {
+                return this.currentUser;
+            },
+            
+            login(userData) {
+                this.currentUser = userData;
+                localStorage.setItem('currentUser', JSON.stringify(userData));
+            },
+            
+            logout() {
+                this.currentUser = null;
+                localStorage.removeItem('currentUser');
+            }
+        };
+        
+        // أنواع المستخدمين
+        const userTypes = {
+            admin: { id: 1, name: 'مشرف المنصة', role: 'admin', email: 'admin@test.com' },
+            scholar: { id: 2, name: 'د. محمد العالم', role: 'scholar', email: 'scholar@test.com' },
+            member: { id: 3, name: 'علي الخطيب', role: 'member', email: 'member@test.com' },
+            guest: { id: 4, name: 'زائر', role: 'guest', email: 'guest@test.com' }
+        };
+        
+        function createTestUser(type) {
+            const user = userTypes[type];
+            if (user) {
+                window.authProtection.login(user);
+                checkUserStatus();
+                testButtonVisibility();
+                console.log('✅ تم إنشاء مستخدم تجريبي:', user);
+            }
+        }
+        
+        function removeTestUser() {
+            window.authProtection.logout();
+            checkUserStatus();
+            testButtonVisibility();
+            console.log('🗑️ تم إزالة المستخدم التجريبي');
+        }
+        
+        function checkUserStatus() {
+            const statusDiv = document.getElementById('user-status');
+            
+            if (window.authProtection.isLoggedIn()) {
+                const user = window.authProtection.getCurrentUser();
+                statusDiv.innerHTML = `
+                    <div class="success">
+                        ✅ مستخدم مسجل دخول<br>
+                        الاسم: ${user.name}<br>
+                        الدور: ${user.role}<br>
+                        البريد: ${user.email}
+                    </div>
+                `;
+            } else {
+                statusDiv.innerHTML = '<div class="error">❌ لا يوجد مستخدم مسجل دخول</div>';
+            }
+        }
+        
+        function testButtonVisibility() {
+            const testBtn = document.getElementById('test-add-lecture-btn');
+            const allowedRoles = ['admin', 'scholar', 'member'];
+            
+            if (window.authProtection.isLoggedIn()) {
+                const user = window.authProtection.getCurrentUser();
+                if (allowedRoles.includes(user.role)) {
+                    testBtn.style.display = 'inline-block';
+                    testBtn.style.backgroundColor = '#28a745';
+                    testBtn.innerHTML = `<i class="fas fa-plus"></i> ✅ الزر ظاهر للدور: ${user.role}`;
+                } else {
+                    testBtn.style.display = 'inline-block';
+                    testBtn.style.backgroundColor = '#dc3545';
+                    testBtn.innerHTML = `<i class="fas fa-times"></i> ❌ الزر مخفي للدور: ${user.role}`;
+                }
+            } else {
+                testBtn.style.display = 'inline-block';
+                testBtn.style.backgroundColor = '#6c757d';
+                testBtn.innerHTML = `<i class="fas fa-user-slash"></i> ❌ الزر مخفي للزوار`;
+            }
+        }
+        
+        // تحميل المستخدم المحفوظ إن وجد
+        const savedUser = localStorage.getItem('currentUser');
+        if (savedUser) {
+            try {
+                window.authProtection.currentUser = JSON.parse(savedUser);
+            } catch (error) {
+                console.error('خطأ في تحميل المستخدم المحفوظ:', error);
+            }
+        }
+        
+        // تحديث الحالة عند تحميل الصفحة
+        document.addEventListener('DOMContentLoaded', function() {
+            checkUserStatus();
+            testButtonVisibility();
+        });
+    </script>
+</body>
+</html>

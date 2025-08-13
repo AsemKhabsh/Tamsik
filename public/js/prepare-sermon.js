@@ -13,6 +13,9 @@ let currentSermonId = null;
 document.addEventListener('DOMContentLoaded', function() {
     console.log('تم تحميل صفحة إعداد الخطب المحسنة');
 
+    // تفعيل القائمة المنسدلة للأجهزة الصغيرة
+    initializeMobileMenu();
+
     // تهيئة الصفحة
     initializePage();
 
@@ -1913,6 +1916,33 @@ style.textContent = `
             display: none !important;
         }
     }
-`;
 
-document.head.appendChild(style);
+// تفعيل القائمة المنسدلة للأجهزة الصغيرة
+function initializeMobileMenu() {
+    const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
+    const navLinks = document.querySelector('.nav-links');
+
+    if (mobileMenuToggle && navLinks) {
+        // إضافة مستمع النقر لزر القائمة
+        mobileMenuToggle.addEventListener('click', function() {
+            navLinks.classList.toggle('active');
+        });
+
+        // إغلاق القائمة عند النقر على أي رابط
+        const navItems = document.querySelectorAll('.nav-links a');
+        navItems.forEach(item => {
+            item.addEventListener('click', function() {
+                if (window.innerWidth <= 768) {
+                    navLinks.classList.remove('active');
+                }
+            });
+        });
+
+        // إعادة ضبط القائمة عند تغيير حجم النافذة
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 768) {
+                navLinks.classList.remove('active');
+            }
+        });
+    }
+}

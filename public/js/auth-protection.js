@@ -3,6 +3,20 @@
  * يمنع الوصول للصفحات بدون تسجيل دخول
  */
 
+// معالجة الأخطاء العامة في هذا الملف
+(function() {
+    'use strict';
+
+    // التأكد من وجود console
+    if (typeof console === 'undefined') {
+        window.console = {
+            log: function() {},
+            error: function() {},
+            warn: function() {},
+            info: function() {}
+        };
+    }
+
 // إعدادات الحماية
 const PROTECTION_CONFIG = {
     // الصفحات التي تتطلب تسجيل دخول
@@ -38,18 +52,18 @@ const PROTECTION_CONFIG = {
 const USER_ROLES = {
     admin: {
         level: 4,
-        name: 'مدير',
+        name: 'مشرف المنصة',
         permissions: ['read', 'write', 'delete', 'manage_users', 'manage_content']
     },
     scholar: {
         level: 3,
         name: 'عالم',
-        permissions: ['read', 'write', 'answer_fatwas']
+        permissions: ['read', 'write', 'answer_fatwas', 'add_sermons']
     },
     member: {
         level: 2,
-        name: 'عضو',
-        permissions: ['read', 'write_limited']
+        name: 'خطيب',
+        permissions: ['read', 'write_limited', 'add_sermons']
     },
     guest: {
         level: 1,
@@ -262,23 +276,28 @@ window.addEventListener('storage', function(e) {
 
 // تشغيل فحص الحماية عند تحميل الصفحة
 document.addEventListener('DOMContentLoaded', function() {
-    // فحص الحماية
-    if (!checkPageProtection()) {
-        return; // إيقاف التحميل إذا لم يُسمح بالوصول
-    }
-    
-    // تحديث الواجهة
-    updateUIBasedOnAuth();
-    
-    // إضافة مستمعي الأحداث لأزرار تسجيل الخروج
-    const logoutButtons = document.querySelectorAll('[data-logout]');
-    logoutButtons.forEach(button => {
-        button.addEventListener('click', function(e) {
-            e.preventDefault();
-            logoutUser();
-            redirectToLogin();
+    try {
+        // فحص الحماية
+        if (!checkPageProtection()) {
+            return; // إيقاف التحميل إذا لم يُسمح بالوصول
+        }
+
+        // تحديث الواجهة
+        updateUIBasedOnAuth();
+
+        // إضافة مستمعي الأحداث لأزرار تسجيل الخروج
+        const logoutButtons = document.querySelectorAll('[data-logout]');
+        logoutButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                logoutUser();
+                redirectToLogin();
+            });
         });
-    });
+    } catch (error) {
+        console.error('خطأ في تهيئة نظام الحماية:', error);
+        // لا نوقف تحميل الصفحة في حالة خطأ في نظام الحماية
+    }
 });
 
 // تصدير الوظائف للاستخدام العام
@@ -294,3 +313,5 @@ window.authProtection = {
     checkPageProtection,
     USER_ROLES
 };
+
+})(); // إغلاق الدالة المجهولة

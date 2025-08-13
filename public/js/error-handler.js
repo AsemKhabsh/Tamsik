@@ -44,6 +44,15 @@ class ErrorHandler {
         // معالجة الوعود المرفوضة
         window.addEventListener('unhandledrejection', (event) => {
             console.error('وعد مرفوض:', event.reason);
+
+            // تجاهل بعض الأخطاء المعروفة التي يتم التعامل معها في مكان آخر
+            if (event.reason && event.reason.message &&
+                (event.reason.message.includes('fetch') ||
+                 event.reason.message.includes('Failed to fetch'))) {
+                console.log('تم تجاهل خطأ fetch - سيتم التعامل معه في مكان آخر');
+                return;
+            }
+
             this.showError('حدث خطأ في تحميل البيانات', 'error');
         });
     }

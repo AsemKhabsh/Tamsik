@@ -264,20 +264,20 @@ const sampleLectures = [
     {
         id: 3,
         title: "التربية الإسلامية للأطفال",
-        lecturer: "د. فاطمة الحضرمية",
+        lecturer: "د. محمد عمر",
         province: "حضرموت",
         location: "مركز الدعوة والإرشاد",
         day: "الخميس",
         time: "16:00",
         type: "ندوة",
-        description: "ندوة تربوية للأمهات حول أساليب التربية الإسلامية الصحيحة",
+        description: "ندوة تربوية لأولياء الأمور حول أساليب التربية الإسلامية الصحيحة",
         contact: "777345678",
         status: "active"
     },
     {
         id: 4,
         title: "دورة تحفيظ القرآن الكريم",
-        lecturer: "الشيخ محمد الزبيدي",
+        lecturer: "الشيخ محمد سعيد",
         province: "عدن",
         location: "مسجد أبان بن عثمان",
         day: "السبت",
@@ -288,50 +288,11 @@ const sampleLectures = [
         status: "active"
     },
     {
-        id: 5,
-        title: "الأخلاق في الإسلام",
-        lecturer: "د. سعد الإبي",
-        province: "إب",
-        location: "مسجد الفاروق",
-        day: "الاثنين",
-        time: "20:30",
-        type: "درس",
-        description: "درس أسبوعي يتناول الأخلاق الإسلامية وتطبيقها في الحياة العملية",
-        contact: "777210987",
-        status: "active"
-    },
-    {
-        id: 6,
-        title: "فقه المعاملات المالية",
-        lecturer: "د. خالد الحديدي",
-        province: "الحديدة",
-        location: "مسجد الهدى",
-        day: "الأربعاء",
-        time: "19:00",
-        type: "محاضرة",
-        description: "محاضرة تتناول أحكام البيع والشراء والمعاملات المالية في الإسلام",
-        contact: "777890123",
-        status: "active"
-    },
-    {
-        id: 7,
-        title: "علوم القرآن الكريم",
-        lecturer: "الشيخ يحيى الذماري",
-        province: "ذمار",
-        location: "مسجد الإمام الشافعي",
-        day: "الجمعة",
-        time: "15:00",
-        type: "محاضرة",
-        description: "محاضرة أسبوعية تتناول علوم القرآن الكريم وأصول التفسير",
-        contact: "777456789",
-        status: "active"
-    },
-    {
         id: 8,
         title: "الفقه المقارن",
-        lecturer: "د. عبد الرحمن الصعدي",
-        province: "صعدة",
-        location: "مسجد الإمام الهادي",
+        lecturer: "د. طاهر صلاح ",
+        province: "مارب",
+        location: "جامع الجامعة ",
         day: "الخميس",
         time: "18:30",
         type: "درس",
@@ -354,6 +315,8 @@ let sortDirection = 'asc';
 
 // عند تحميل الصفحة
 document.addEventListener('DOMContentLoaded', async function() {
+    console.log('🚀 بدء تحميل صفحة المحاضرات...');
+
     // تحقق من حالة تسجيل الدخول
     checkUserLogin();
 
@@ -371,16 +334,141 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     // إعداد التقويم
     setupCalendar();
+
+    console.log('✅ تم تحميل صفحة المحاضرات بنجاح');
 });
 
-// تحقق من حالة تسجيل الدخول
+// تحقق من حالة تسجيل الدخول وإدارة صلاحيات إضافة المحاضرات
 function checkUserLogin() {
+    console.log('🔍 فحص حالة تسجيل الدخول...');
+
+    // مستخدم تجريبي للاختبار (يمكن إزالته لاحقاً)
+    // إذا لم يكن هناك مستخدم مسجل دخول، استخدم مستخدم تجريبي
+    if (!localStorage.getItem('currentUser') && (!window.authProtection || !window.authProtection.isLoggedIn())) {
+        console.log('🧪 إنشاء مستخدم تجريبي للاختبار...');
+        const testUser = {
+            id: 999,
+            name: 'مستخدم تجريبي',
+            role: 'member', // خطيب
+            email: 'test@example.com'
+        };
+        localStorage.setItem('currentUser', JSON.stringify(testUser));
+        console.log('✅ تم إنشاء مستخدم تجريبي:', testUser);
+    }
+
+    // استخدام نظام الحماية الموحد إذا كان متوفراً
+    if (window.authProtection && window.authProtection.isLoggedIn()) {
+        currentUser = window.authProtection.getCurrentUser();
+        console.log('✅ مستخدم مسجل دخول عبر نظام الحماية:', currentUser);
+        manageLectureAddPermissions();
+    } else {
+        // التحقق من التخزين المحلي كبديل
+        const userData = localStorage.getItem('currentUser');
+        if (userData) {
+            try {
+                currentUser = JSON.parse(userData);
+                console.log('✅ مستخدم مسجل دخول عبر التخزين المحلي:', currentUser);
+                manageLectureAddPermissions();
+            } catch (error) {
+                console.error('❌ خطأ في قراءة بيانات المستخدم:', error);
+                currentUser = null;
+                manageLectureAddPermissions();
+            }
+        } else {
+            console.log('❌ لا يوجد مستخدم مسجل دخول');
+            currentUser = null;
+            manageLectureAddPermissions();
+        }
+    }
+}
+
+// دالة لإزالة المستخدم التجريبي (للاختبار)
+function removeTestUser() {
     const userData = localStorage.getItem('currentUser');
     if (userData) {
-        currentUser = JSON.parse(userData);
-        // إظهار زر إضافة محاضرة للأعضاء
-        if (currentUser.role === 'member' || currentUser.role === 'scholar') {
-            document.getElementById('add-lecture-btn').style.display = 'block';
+        const user = JSON.parse(userData);
+        if (user.id === 999) {
+            localStorage.removeItem('currentUser');
+            console.log('🗑️ تم إزالة المستخدم التجريبي');
+            location.reload(); // إعادة تحميل الصفحة
+        }
+    }
+}
+
+// إضافة دالة للوحة التحكم (يمكن استدعاؤها من وحدة التحكم)
+window.lectureDebug = {
+    removeTestUser: removeTestUser,
+    showCurrentUser: () => console.log('المستخدم الحالي:', currentUser),
+    testPermissions: () => manageLectureAddPermissions()
+};
+
+// إدارة صلاحيات إضافة المحاضرات
+function manageLectureAddPermissions() {
+    console.log('🎯 إدارة صلاحيات إضافة المحاضرات...');
+    console.log('👤 المستخدم الحالي:', currentUser);
+
+    const addLectureBtn = document.getElementById('add-lecture-btn');
+    const addInfoSection = document.getElementById('lecture-add-info');
+    const addInfoMessage = document.getElementById('add-info-message');
+    const infoActions = document.getElementById('info-actions');
+
+    console.log('🔍 عناصر الواجهة:', {
+        addLectureBtn: !!addLectureBtn,
+        addInfoSection: !!addInfoSection,
+        addInfoMessage: !!addInfoMessage,
+        infoActions: !!infoActions
+    });
+
+    // الأدوار المسموح لها بإضافة المحاضرات (مشرف المنصة، عالم، خطيب)
+    const allowedRoles = ['admin', 'scholar', 'member'];
+
+    if (currentUser && allowedRoles.includes(currentUser.role)) {
+        console.log('✅ المستخدم لديه صلاحية إضافة المحاضرات');
+
+        // المستخدم لديه صلاحية - إظهار الزر
+        if (addLectureBtn) {
+            addLectureBtn.style.display = 'block';
+            console.log('✅ تم إظهار زر إضافة المحاضرة');
+        } else {
+            console.error('❌ لم يتم العثور على زر إضافة المحاضرة');
+        }
+
+        // إخفاء قسم المعلومات للمستخدمين المؤهلين
+        if (addInfoSection) {
+            addInfoSection.style.display = 'none';
+        }
+
+    } else if (currentUser) {
+        console.log('⚠️ المستخدم مسجل دخول لكن ليس لديه صلاحية');
+
+        // المستخدم مسجل دخول لكن ليس لديه صلاحية
+        if (addLectureBtn) {
+            addLectureBtn.style.display = 'none';
+        }
+
+        // إظهار قسم المعلومات مع رسالة توضيحية
+        if (addInfoSection && addInfoMessage && infoActions) {
+            addInfoSection.style.display = 'block';
+            addInfoMessage.textContent = 'إضافة المحاضرات متاحة للعلماء والمشائخ والخطباء ومشرفي المنصة فقط';
+            infoActions.innerHTML = '<p style="color: #6c757d; margin: 0; font-size: 0.9rem;">للحصول على صلاحية إضافة المحاضرات، يرجى التواصل مع إدارة الموقع</p>';
+        }
+
+    } else {
+        console.log('❌ زائر غير مسجل دخول');
+
+        // زائر غير مسجل دخول
+        if (addLectureBtn) {
+            addLectureBtn.style.display = 'none';
+        }
+
+        // إظهار قسم المعلومات مع أزرار تسجيل الدخول
+        if (addInfoSection && addInfoMessage && infoActions) {
+            addInfoSection.style.display = 'block';
+            addInfoMessage.textContent = 'يمكن للعلماء والمشائخ والخطباء ومشرفي المنصة إضافة محاضرات ودروس جديدة';
+            infoActions.innerHTML = `
+                <a href="login.html" class="btn btn-primary">تسجيل الدخول</a>
+                <a href="register.html" class="btn btn-outline">إنشاء حساب</a>
+            `;
         }
     }
 }
@@ -413,12 +501,101 @@ async function loadLecturesFromAPI() {
 
             console.log(`تم تحميل ${lecturesData.length} محاضرة من API`);
         }
+
+        // تحميل المحاضرات المحلية وإضافتها
+        loadLocalLectures();
+
+        // إضافة بيانات تجريبية إذا لم تكن هناك محاضرات
+        if (lecturesData.length === 0) {
+            addSampleLectures();
+        }
+
     } catch (error) {
         console.error('خطأ في تحميل المحاضرات:', error);
         showToast('خطأ في تحميل المحاضرات', 'error');
+
+        // في حالة فشل API، تحميل البيانات المحلية فقط
+        loadLocalLectures();
     } finally {
         showLoadingSpinner(false);
     }
+}
+
+// تحميل المحاضرات من التخزين المحلي
+function loadLocalLectures() {
+    try {
+        const storedLectures = JSON.parse(localStorage.getItem('lectures')) || [];
+
+        if (storedLectures.length > 0) {
+            // إضافة المحاضرات المحلية إلى البيانات الموجودة
+            storedLectures.forEach(localLecture => {
+                // التحقق من عدم وجود المحاضرة مسبقاً (تجنب التكرار)
+                const exists = lecturesData.some(lecture => lecture.id === localLecture.id);
+                if (!exists) {
+                    lecturesData.push(localLecture);
+                }
+            });
+
+            // تحديث النسخ الاحتياطية
+            allLectures = [...lecturesData];
+            filteredLectures = [...lecturesData];
+
+            console.log(`تم تحميل ${storedLectures.length} محاضرة من التخزين المحلي`);
+        }
+    } catch (error) {
+        console.error('خطأ في تحميل المحاضرات المحلية:', error);
+    }
+}
+
+// إضافة بيانات تجريبية
+function addSampleLectures() {
+    const sampleLectures = [
+        {
+            id: 1,
+            title: 'درس في التفسير',
+            lecturer: 'د. عبدالرحمن السريحي',
+            province: 'مارب',
+            location: 'جامع الجامعة',
+            day: 'الجمعة',
+            time: '15:00',
+            type: 'درس',
+            description: 'درس أسبوعي في تفسير القرآن الكريم',
+            contact: '777123456',
+            status: 'active'
+        },
+        {
+            id: 2,
+            title: 'محاضرة في الفقه',
+            lecturer: 'الشيخ احمد حربة',
+            province: 'مارب',
+            location: 'جامع الرضوان ',
+            day: 'الثلاثاء',
+            time: '20:00',
+            type: 'محاضرة',
+            description: 'محاضرة شهرية في أحكام الفقه',
+            contact: '733987654',
+            status: 'active'
+        },
+        {
+            id: 3,
+            title: 'ندوة الشباب',
+            lecturer: 'د. محمد سعيد',
+            province: 'حضروموت',
+            location: 'مركز الدعوة الإسلامية',
+            day: 'السبت',
+            time: '16:30',
+            type: 'ندوة',
+            description: 'ندوة أسبوعية موجهة للشباب',
+            contact: '770555333',
+            status: 'active'
+        }
+    ];
+
+    lecturesData = [...sampleLectures];
+    allLectures = [...sampleLectures];
+    filteredLectures = [...sampleLectures];
+
+    console.log('تم إضافة بيانات تجريبية للمحاضرات');
 }
 
 // إظهار/إخفاء مؤشر التحميل
@@ -467,8 +644,13 @@ function setupEventListeners() {
 
     // زر إضافة محاضرة
     const addLectureBtn = document.getElementById('add-lecture-btn');
+    console.log('🔍 البحث عن زر إضافة المحاضرة:', !!addLectureBtn);
     if (addLectureBtn) {
         addLectureBtn.addEventListener('click', openAddLectureModal);
+        console.log('✅ تم ربط مستمع الحدث بزر إضافة المحاضرة');
+        console.log('👁️ حالة عرض الزر الحالية:', addLectureBtn.style.display);
+    } else {
+        console.error('❌ لم يتم العثور على زر إضافة المحاضرة');
     }
 
     // إغلاق النافذة المنبثقة
@@ -860,9 +1042,17 @@ function changePage(page) {
 
 // فتح نافذة إضافة محاضرة
 function openAddLectureModal() {
+    // التحقق من تسجيل الدخول
     if (!currentUser) {
         alert('يجب تسجيل الدخول أولاً');
         window.location.href = 'login.html';
+        return;
+    }
+
+    // التحقق من الصلاحيات
+    const allowedRoles = ['admin', 'scholar', 'member'];
+    if (!allowedRoles.includes(currentUser.role)) {
+        alert('ليس لديك صلاحية لإضافة محاضرة. يُسمح فقط للعلماء والمشائخ والخطباء ومشرفي المنصة بإضافة المحاضرات.');
         return;
     }
 
@@ -884,6 +1074,18 @@ function closeAddLectureModal() {
 // معالجة إضافة محاضرة جديدة
 function handleAddLecture(e) {
     e.preventDefault();
+
+    // التحقق من تسجيل الدخول والصلاحيات
+    if (!currentUser) {
+        alert('يجب تسجيل الدخول أولاً');
+        return;
+    }
+
+    const allowedRoles = ['admin', 'scholar', 'member'];
+    if (!allowedRoles.includes(currentUser.role)) {
+        alert('ليس لديك صلاحية لإضافة محاضرة. يُسمح فقط للعلماء والمشائخ والخطباء ومشرفي المنصة بإضافة المحاضرات.');
+        return;
+    }
 
     const title = document.getElementById('lecture-title').value;
     const type = document.getElementById('lecture-type').value;
@@ -916,17 +1118,55 @@ function handleAddLecture(e) {
 
     // إضافة المحاضرة إلى البيانات
     lecturesData.push(newLecture);
+    allLectures.push(newLecture); // إضافة إلى النسخة الاحتياطية أيضاً
 
     // حفظ في التخزين المحلي
     const storedLectures = JSON.parse(localStorage.getItem('lectures')) || [];
     storedLectures.push(newLecture);
     localStorage.setItem('lectures', JSON.stringify(storedLectures));
 
+    // تحديث العرض فوراً
+    updateLecturesDisplay();
+
     // إغلاق النافذة
     closeAddLectureModal();
 
     // إظهار رسالة نجاح
-    alert('تم إرسال المحاضرة بنجاح! سيتم مراجعتها من قبل الإدارة قبل النشر.');
+    showToast('تم إضافة المحاضرة بنجاح!', 'success');
+
+    // إرسال إلى الخادم (اختياري)
+    saveLectureToServer(newLecture);
+}
+
+// تحديث عرض المحاضرات
+function updateLecturesDisplay() {
+    // تحديث البيانات المفلترة
+    filteredLectures = [...lecturesData];
+
+    // تحديث العرض الحالي
+    displayLectures();
+
+    // تحديث الترقيم
+    setupPagination();
+}
+
+// حفظ المحاضرة في الخادم
+async function saveLectureToServer(lectureData) {
+    try {
+        const result = await LecturesAPI.create(lectureData);
+        if (result) {
+            console.log('تم حفظ المحاضرة في الخادم بنجاح');
+            // تحديث ID المحاضرة بالـ ID الجديد من الخادم
+            const index = lecturesData.findIndex(l => l.id === lectureData.id);
+            if (index !== -1 && result.id) {
+                lecturesData[index].id = result.id;
+                lecturesData[index].server_id = result.id;
+            }
+        }
+    } catch (error) {
+        console.error('خطأ في حفظ المحاضرة في الخادم:', error);
+        // المحاضرة محفوظة محلياً، لذا لا نحتاج لإظهار خطأ للمستخدم
+    }
 }
 
 // عرض تفاصيل المحاضرة

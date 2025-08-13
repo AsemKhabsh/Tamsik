@@ -1,6 +1,11 @@
 // ملف JavaScript لإدارة إضافة الخطب الجديدة
 
 document.addEventListener('DOMContentLoaded', function() {
+    // التحقق من صلاحية الوصول للصفحة
+    if (!checkSermonAddPermission()) {
+        return; // إيقاف تحميل باقي الكود إذا لم يكن لديه صلاحية
+    }
+
     // عناصر النموذج
     const sermonForm = document.getElementById('add-sermon-form');
     const excerptField = document.getElementById('sermon-excerpt');
@@ -79,3 +84,59 @@ document.addEventListener('DOMContentLoaded', function() {
         localStorage.setItem('sermons', JSON.stringify(sermons));
     }
 });
+
+// دالة للتحقق من صلاحية إضافة الخطبة
+function checkSermonAddPermission() {
+    // التحقق من وجود نظام الحماية
+    if (!window.authProtection) {
+        console.error('نظام الحماية غير متوفر');
+        showAccessDeniedPage('نظام الحماية غير متوفر');
+        return false;
+    }
+
+    // التحقق من تسجيل الدخول
+    if (!window.authProtection.isLoggedIn()) {
+        console.log('المستخدم غير مسجل دخول');
+        showAccessDeniedPage('يجب تسجيل الدخول أولاً للوصول إلى هذه الصفحة');
+        return false;
+    }
+
+    // الحصول على بيانات المستخدم الحالي
+    const currentUser = window.authProtection.getCurrentUser();
+    if (!currentUser) {
+        console.log('لا يمكن الحصول على بيانات المستخدم');
+        showAccessDeniedPage('خطأ في الحصول على بيانات المستخدم');
+        return false;
+    }
+
+    // التحقق من الدور المسموح (مشرف المنصة، عالم، خطيب)
+    const allowedRoles = ['admin', 'scholar', 'member'];
+    if (!allowedRoles.includes(currentUser.role)) {
+        console.log(`المستخدم ليس لديه صلاحية. الدور الحالي: ${currentUser.role}`);
+        showAccessDeniedPage('ليس لديك صلاحية لإضافة خطبة. يُسمح فقط للخطباء والعلماء ومشرفي المنصة بإضافة الخطب.');
+        return false;
+    }
+
+    console.log('المستخدم لديه صلاحية إضافة الخطب');
+    return true;
+}
+
+// دالة لعرض صفحة منع الوصول
+function showAccessDeniedPage(message) {
+    const container = document.querySelector('.add-sermon-form-container');
+    if (container) {
+        container.innerHTML = `
+            <div class="form-card">
+                <div class="access-denied">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 4rem; color: #e74c3c; margin-bottom: 1rem;"></i>
+                    <h2 style="color: #e74c3c; margin-bottom: 1rem;">غير مسموح بالوصول</h2>
+                    <p style="margin-bottom: 2rem; color: #666;">${message}</p>
+                    <div class="access-denied-actions">
+                        <a href="sermons.html" class="btn btn-primary">العودة إلى الخطب الجاهزة</a>
+                        <a href="login.html" class="btn btn-outline">تسجيل الدخول</a>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+}

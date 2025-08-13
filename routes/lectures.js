@@ -81,10 +81,24 @@ router.get('/:id', validateId, async (req, res) => {
     }
 });
 
-// إنشاء محاضرة جديدة
+// إنشاء محاضرة جديدة (للعلماء والمشائخ والخطباء فقط)
 router.post('/', authenticateToken, validateLectureCreation, async (req, res) => {
     try {
-        const lectureData = { ...req.body, user_id: req.user.id };
+        // التحقق من أن المستخدم لديه صلاحية إضافة محاضرة (مشرف المنصة، عالم، خطيب)
+        const allowedRoles = ['admin', 'scholar', 'member'];
+        if (!allowedRoles.includes(req.user.role)) {
+            return res.status(403).json({
+                success: false,
+                message: 'ليس لديك صلاحية لإضافة محاضرة. يُسمح فقط للعلماء والمشائخ والخطباء ومشرفي المنصة بإضافة المحاضرات.'
+            });
+        }
+
+        const lectureData = {
+            ...req.body,
+            user_id: req.user.id,
+            status: req.user.role === 'admin' ? 'published' : 'pending' // المشرف ينشر مباشرة، الآخرون يحتاجون موافقة
+        };
+
         const lecture = await Lecture.create(lectureData);
         res.status(201).json({ success: true, message: 'تم إنشاء المحاضرة بنجاح', data: { lecture } });
     } catch (error) {

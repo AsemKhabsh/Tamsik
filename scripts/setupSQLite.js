@@ -274,23 +274,7 @@ function insertSampleData(db, callback) {
         });
     });
     
-    // إدراج خطبة تجريبية
-    const insertSermon = `
-        INSERT OR IGNORE INTO sermons (title, content, category, user_id, status)
-        VALUES (?, ?, ?, 1, 'published')
-    `;
-    
-    db.run(insertSermon, [
-        'خطبة تجريبية - أهمية الصلاة',
-        'بسم الله الرحمن الرحيم، الحمد لله رب العالمين...',
-        'العقيدة'
-    ], (err) => {
-        if (err) {
-            logError(`خطأ في إدراج الخطبة التجريبية: ${err.message}`);
-        } else {
-            logSuccess('تم إدراج خطبة تجريبية');
-        }
-    });
+    // لا توجد خطب افتراضية - سيتم إضافة الخطب من قبل المستخدمين
     
     logSuccess('تم إدراج البيانات التجريبية');
     callback();

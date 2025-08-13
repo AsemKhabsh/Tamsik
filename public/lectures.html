@@ -64,7 +64,7 @@
                 </p>
             </div>
             <div class="page-actions">
-                <button id="add-lecture-btn" class="btn btn-primary" style="display: none;">
+                <button id="add-lecture-btn" class="btn btn-primary">
                     <i class="fas fa-plus"></i>
                     إضافة محاضرة جديدة
                 </button>
@@ -72,6 +72,22 @@
                     <i class="fas fa-calendar"></i>
                     عرض التقويم
                 </button>
+            </div>
+        </div>
+
+        <!-- قسم معلومات إضافة المحاضرات -->
+        <div class="lecture-add-info" id="lecture-add-info" style="display: none;">
+            <div class="info-card">
+                <div class="info-content">
+                    <i class="fas fa-info-circle"></i>
+                    <div class="info-text">
+                        <h4>إضافة المحاضرات والدروس</h4>
+                        <p id="add-info-message">يمكن للعلماء والمشائخ والخطباء ومشرفي المنصة إضافة محاضرات ودروس جديدة</p>
+                    </div>
+                </div>
+                <div class="info-actions" id="info-actions">
+                    <!-- سيتم إضافة الأزرار هنا حسب حالة المستخدم -->
+                </div>
             </div>
         </div>
 
@@ -84,27 +100,14 @@
             <div class="filter-controls">
                 <select id="province-filter">
                     <option value="">جميع المحافظات</option>
-                    <option value="صنعاء">صنعاء</option>
                     <option value="عدن">عدن</option>
                     <option value="تعز">تعز</option>
-                    <option value="الحديدة">الحديدة</option>
-                    <option value="إب">إب</option>
-                    <option value="ذمار">ذمار</option>
                     <option value="حضرموت">حضرموت</option>
                     <option value="لحج">لحج</option>
                     <option value="أبين">أبين</option>
                     <option value="شبوة">شبوة</option>
                     <option value="المهرة">المهرة</option>
-                    <option value="حجة">حجة</option>
-                    <option value="صعدة">صعدة</option>
-                    <option value="عمران">عمران</option>
-                    <option value="الجوف">الجوف</option>
                     <option value="مأرب">مأرب</option>
-                    <option value="البيضاء">البيضاء</option>
-                    <option value="ريمة">ريمة</option>
-                    <option value="المحويت">المحويت</option>
-                    <option value="الضالع">الضالع</option>
-                    <option value="سقطرى">سقطرى</option>
                 </select>
                 <select id="day-filter">
                     <option value="">جميع الأيام</option>
@@ -256,27 +259,14 @@
                         <label for="lecture-province">المحافظة</label>
                         <select id="lecture-province" required>
                             <option value="">اختر المحافظة</option>
-                            <option value="صنعاء">صنعاء</option>
                             <option value="عدن">عدن</option>
                             <option value="تعز">تعز</option>
-                            <option value="الحديدة">الحديدة</option>
-                            <option value="إب">إب</option>
-                            <option value="ذمار">ذمار</option>
                             <option value="حضرموت">حضرموت</option>
                             <option value="لحج">لحج</option>
                             <option value="أبين">أبين</option>
                             <option value="شبوة">شبوة</option>
                             <option value="المهرة">المهرة</option>
-                            <option value="حجة">حجة</option>
-                            <option value="صعدة">صعدة</option>
-                            <option value="عمران">عمران</option>
-                            <option value="الجوف">الجوف</option>
                             <option value="مأرب">مأرب</option>
-                            <option value="البيضاء">البيضاء</option>
-                            <option value="ريمة">ريمة</option>
-                            <option value="المحويت">المحويت</option>
-                            <option value="الضالع">الضالع</option>
-                            <option value="سقطرى">سقطرى</option>
                         </select>
                     </div>
                 </div>

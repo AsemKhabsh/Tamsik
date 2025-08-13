@@ -68,9 +68,18 @@ router.get('/:id', validateId, asyncHandler(async (req, res) => {
     res.json(createSuccessResponse({ sermon }, 'تم الحصول على الخطبة بنجاح'));
 }));
 
-// إنشاء خطبة جديدة
+// إنشاء خطبة جديدة (للخطباء والعلماء ومشرفي المنصة فقط)
 router.post('/', authenticateToken, validateSermonCreation, async (req, res) => {
     try {
+        // التحقق من أن المستخدم لديه صلاحية إضافة خطبة (مشرف المنصة، عالم، خطيب)
+        const allowedRoles = ['admin', 'scholar', 'member'];
+        if (!allowedRoles.includes(req.user.role)) {
+            return res.status(403).json({
+                success: false,
+                message: 'ليس لديك صلاحية لإضافة خطبة. يُسمح فقط للخطباء والعلماء ومشرفي المنصة بإضافة الخطب.'
+            });
+        }
+
         const sermonData = {
             ...req.body,
             user_id: req.user.id,
