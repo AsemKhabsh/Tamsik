@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تشخيص مشاكل الخطب</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            direction: rtl;
+            text-align: right;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .result {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
+            white-space: pre-wrap;
+            font-family: monospace;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .success {
+            border-color: #28a745;
+            background: #d4edda;
+        }
+        .error {
+            border-color: #dc3545;
+            background: #f8d7da;
+        }
+        .warning {
+            border-color: #ffc107;
+            background: #fff3cd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 تشخيص مشاكل صفحة الخطب</h1>
+        
+        <div class="test-section">
+            <h3>1. اختبار تحميل الملفات</h3>
+            <button class="test-button" onclick="testScriptLoading()">اختبار تحميل الملفات</button>
+            <div id="script-results"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>2. اختبار API</h3>
+            <button class="test-button" onclick="testAPI()">اختبار API</button>
+            <div id="api-results"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>3. اختبار دوال JavaScript</h3>
+            <button class="test-button" onclick="testJSFunctions()">اختبار الدوال</button>
+            <div id="js-results"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>4. اختبار عناصر HTML</h3>
+            <button class="test-button" onclick="testHTMLElements()">اختبار العناصر</button>
+            <div id="html-results"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>5. محاكاة تحميل الخطب</h3>
+            <button class="test-button" onclick="simulateLoadSermons()">محاكاة التحميل</button>
+            <div id="simulation-results"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>6. سجل وحدة التحكم</h3>
+            <button class="test-button" onclick="showConsoleLog()">عرض السجل</button>
+            <div id="console-results"></div>
+        </div>
+    </div>
+
+    <!-- تحميل الملفات المطلوبة -->
+    <script src="js/error-handler.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/simple-auth.js"></script>
+    <script src="js/auth-protection.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/sermons.js"></script>
+
+    <script>
+        // متغير لحفظ رسائل وحدة التحكم
+        let consoleMessages = [];
+        
+        // اعتراض رسائل console
+        const originalConsole = {
+            log: console.log,
+            error: console.error,
+            warn: console.warn,
+            info: console.info
+        };
+        
+        ['log', 'error', 'warn', 'info'].forEach(method => {
+            console[method] = function(...args) {
+                consoleMessages.push({
+                    type: method,
+                    message: args.join(' '),
+                    timestamp: new Date().toLocaleTimeString('ar-SA')
+                });
+                originalConsole[method].apply(console, args);
+            };
+        });
+
+        function addResult(containerId, message, type = 'success') {
+            const container = document.getElementById(containerId);
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `result ${type}`;
+            resultDiv.textContent = `[${new Date().toLocaleTimeString('ar-SA')}] ${message}`;
+            container.appendChild(resultDiv);
+        }
+
+        function testScriptLoading() {
+            const container = document.getElementById('script-results');
+            container.innerHTML = '';
+            
+            const scripts = [
+                'window.errorHandler',
+                'window.authProtection',
+                'loadSermons',
+                'showLoadingState',
+                'hideLoadingState'
+            ];
+            
+            scripts.forEach(script => {
+                try {
+                    const exists = eval(`typeof ${script} !== 'undefined'`);
+                    if (exists) {
+                        addResult('script-results', `✅ ${script} محمل بنجاح`, 'success');
+                    } else {
+                        addResult('script-results', `❌ ${script} غير محمل`, 'error');
+                    }
+                } catch (error) {
+                    addResult('script-results', `❌ خطأ في فحص ${script}: ${error.message}`, 'error');
+                }
+            });
+        }
+
+        async function testAPI() {
+            const container = document.getElementById('api-results');
+            container.innerHTML = '';
+            
+            try {
+                addResult('api-results', '🔄 اختبار الاتصال بـ API...', 'warning');
+                
+                const response = await fetch('/api/sermons');
+                addResult('api-results', `📡 استجابة: ${response.status} ${response.statusText}`, 'success');
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    addResult('api-results', `📊 البيانات: ${JSON.stringify(data, null, 2)}`, 'success');
+                } else {
+                    addResult('api-results', `❌ خطأ في API: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                addResult('api-results', `❌ خطأ في الشبكة: ${error.message}`, 'error');
+            }
+        }
+
+        function testJSFunctions() {
+            const container = document.getElementById('js-results');
+            container.innerHTML = '';
+            
+            // اختبار الدوال
+            const functions = [
+                'loadSermons',
+                'showLoadingState',
+                'hideLoadingState',
+                'displaySermons',
+                'loadLocalSermons'
+            ];
+            
+            functions.forEach(funcName => {
+                try {
+                    const func = eval(funcName);
+                    if (typeof func === 'function') {
+                        addResult('js-results', `✅ دالة ${funcName} موجودة`, 'success');
+                    } else {
+                        addResult('js-results', `❌ ${funcName} ليست دالة`, 'error');
+                    }
+                } catch (error) {
+                    addResult('js-results', `❌ خطأ في ${funcName}: ${error.message}`, 'error');
+                }
+            });
+        }
+
+        function testHTMLElements() {
+            const container = document.getElementById('html-results');
+            container.innerHTML = '';
+            
+            const selectors = [
+                '.all-sermons',
+                '.all-sermons .sermons-grid',
+                '.featured-sermons',
+                '.sermon-categories'
+            ];
+            
+            selectors.forEach(selector => {
+                const element = document.querySelector(selector);
+                if (element) {
+                    addResult('html-results', `✅ عنصر ${selector} موجود`, 'success');
+                } else {
+                    addResult('html-results', `❌ عنصر ${selector} غير موجود`, 'error');
+                }
+            });
+        }
+
+        async function simulateLoadSermons() {
+            const container = document.getElementById('simulation-results');
+            container.innerHTML = '';
+            
+            try {
+                addResult('simulation-results', '🔄 بدء محاكاة تحميل الخطب...', 'warning');
+                
+                if (typeof loadSermons === 'function') {
+                    await loadSermons();
+                    addResult('simulation-results', '✅ تم تشغيل loadSermons بنجاح', 'success');
+                } else {
+                    addResult('simulation-results', '❌ دالة loadSermons غير موجودة', 'error');
+                }
+            } catch (error) {
+                addResult('simulation-results', `❌ خطأ في محاكاة التحميل: ${error.message}`, 'error');
+            }
+        }
+
+        function showConsoleLog() {
+            const container = document.getElementById('console-results');
+            container.innerHTML = '';
+            
+            if (consoleMessages.length === 0) {
+                addResult('console-results', 'لا توجد رسائل في وحدة التحكم', 'warning');
+                return;
+            }
+            
+            consoleMessages.forEach(msg => {
+                const type = msg.type === 'error' ? 'error' : 
+                           msg.type === 'warn' ? 'warning' : 'success';
+                addResult('console-results', `[${msg.type.toUpperCase()}] ${msg.message}`, type);
+            });
+        }
+
+        // تشغيل اختبارات تلقائية عند تحميل الصفحة
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                testScriptLoading();
+                setTimeout(() => testAPI(), 1000);
+                setTimeout(() => testJSFunctions(), 2000);
+                setTimeout(() => testHTMLElements(), 3000);
+            }, 500);
+        });
+    </script>
+</body>
+</html>

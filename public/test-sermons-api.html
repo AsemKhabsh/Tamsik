@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>اختبار API الخطب</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            direction: rtl;
+            text-align: right;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .result {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px 0;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+        .success {
+            border-color: #28a745;
+            background: #d4edda;
+        }
+        .error {
+            border-color: #dc3545;
+            background: #f8d7da;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>اختبار API الخطب</h1>
+        
+        <div>
+            <button class="test-button" onclick="testGetSermons()">اختبار جلب الخطب</button>
+            <button class="test-button" onclick="testServerConnection()">اختبار الاتصال بالخادم</button>
+            <button class="test-button" onclick="clearResults()">مسح النتائج</button>
+        </div>
+        
+        <div id="results"></div>
+    </div>
+
+    <script>
+        function addResult(message, isSuccess = true) {
+            const resultsDiv = document.getElementById('results');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `result ${isSuccess ? 'success' : 'error'}`;
+            resultDiv.textContent = `[${new Date().toLocaleTimeString('ar-SA')}] ${message}`;
+            resultsDiv.appendChild(resultDiv);
+            resultsDiv.scrollTop = resultsDiv.scrollHeight;
+        }
+
+        async function testServerConnection() {
+            try {
+                addResult('🔄 اختبار الاتصال بالخادم...');
+                
+                const response = await fetch('/api/sermons', {
+                    method: 'HEAD'
+                });
+                
+                if (response.ok) {
+                    addResult('✅ الخادم متاح ويستجيب', true);
+                } else {
+                    addResult(`❌ الخادم يستجيب بخطأ: ${response.status} - ${response.statusText}`, false);
+                }
+            } catch (error) {
+                addResult(`❌ فشل في الاتصال بالخادم: ${error.message}`, false);
+            }
+        }
+
+        async function testGetSermons() {
+            try {
+                addResult('🔄 اختبار جلب الخطب...');
+                
+                const response = await fetch('/api/sermons');
+                
+                if (!response.ok) {
+                    addResult(`❌ خطأ في الاستجابة: ${response.status} - ${response.statusText}`, false);
+                    return;
+                }
+                
+                const data = await response.json();
+                addResult(`✅ تم جلب البيانات بنجاح`, true);
+                addResult(`📊 البيانات المستلمة: ${JSON.stringify(data, null, 2)}`, true);
+                
+                if (data.data && data.data.sermons) {
+                    addResult(`📈 عدد الخطب: ${data.data.sermons.length}`, true);
+                } else {
+                    addResult('⚠️ لا توجد خطب في الاستجابة', false);
+                }
+                
+            } catch (error) {
+                addResult(`❌ خطأ في جلب الخطب: ${error.message}`, false);
+            }
+        }
+
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+
+        // اختبار تلقائي عند تحميل الصفحة
+        window.addEventListener('load', function() {
+            addResult('🚀 بدء الاختبارات التلقائية...');
+            testServerConnection();
+            setTimeout(() => {
+                testGetSermons();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
