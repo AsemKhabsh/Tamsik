@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إضافة محاضرة جديدة - تمسك</title>
+    <link rel="stylesheet" href="{{ asset('style.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/main.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/layout.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/responsive.css') }}">
+
+    <!-- الخطوط -->
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Scheherazade+New:wght@400;700&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="container">
+                <a href="{{ url('/') }}" class="logo">تمسيك</a>
+                <p class="slogan">"والذين يمسكون بالكتاب..."</p>
+                <button class="mobile-menu-toggle"><i class="fas fa-bars"></i></button>
+                <ul class="nav-links">
+                    <li><a href="{{ url('/') }}"><i class="fas fa-home"></i> الرئيسية</a></li>
+                    <li><a href="{{ route('sermons.index') }}"><i class="fas fa-book-open"></i> الخطب الجاهزة</a></li>
+                    <li><a href="{{ route('scholars.index') }}"><i class="fas fa-user-graduate"></i> العلماء اليمنيين</a></li>
+                    <li><a href="{{ route('thinkers.index') }}"><i class="fas fa-lightbulb"></i> المفكرون والدعاة</a></li>
+                    <li><a href="{{ route('lectures.index') }}" class="active"><i class="fas fa-microphone"></i> المحاضرات والدروس</a></li>
+                </ul>
+
+                <!-- معلومات المستخدم -->
+                @auth
+                <div class="user-info">
+                    <span>{{ auth()->user()->name }}</span>
+                    <span class="user-role-badge">{{ auth()->user()->user_type }}</span>
+                    <form method="POST" action="{{ route('logout') }}" style="display: inline;">
+                        @csrf
+                        <button type="submit" class="btn-logout">
+                            <i class="fas fa-sign-out-alt"></i> خروج
+                        </button>
+                    </form>
+                </div>
+                @else
+                <div class="auth-buttons">
+                    <a href="{{ route('login') }}" class="btn btn-outline">تسجيل الدخول</a>
+                    <a href="{{ route('register') }}" class="btn btn-primary">إنشاء حساب</a>
+                </div>
+                @endauth
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <div class="container">
+            <!-- Page Header -->
+            <section class="page-header">
+                <div class="page-header-content">
+                    <h1 class="page-title">
+                        <i class="fas fa-chalkboard-teacher"></i>
+                        إضافة محاضرة جديدة
+                    </h1>
+                    <p class="page-description">املأ البيانات التالية لإضافة محاضرة جديدة</p>
+                    <nav class="breadcrumb">
+                        <a href="{{ url('/') }}">الرئيسية</a>
+                        <span>/</span>
+                        <a href="{{ route('lectures.index') }}">المحاضرات</a>
+                        <span>/</span>
+                        <span>إضافة محاضرة</span>
+                    </nav>
+                </div>
+            </section>
+
+            <!-- Success/Error Messages -->
+            @if(session('success'))
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle"></i>
+                    {{ session('success') }}
+                </div>
+            @endif
+
+            @if($errors->any())
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>يرجى تصحيح الأخطاء التالية:</strong>
+                    <ul>
+                        @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
+            <!-- Form -->
+            <div class="card shadow">
+                <div class="card-body">
+                    <form action="{{ route('lectures.store') }}" method="POST" enctype="multipart/form-data">
+                        @csrf
+
+                        <!-- معلومات أساسية -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="text-primary border-bottom pb-2 mb-3">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    المعلومات الأساسية
+                                </h5>
+                            </div>
+
+                            <div class="col-md-12 mb-3">
+                                <label for="title" class="form-label">عنوان المحاضرة <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="title" name="title" 
+                                       value="{{ old('title') }}" required>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="category" class="form-label">التصنيف <span class="text-danger">*</span></label>
+                                <select class="form-select" id="category" name="category" required>
+                                    <option value="">اختر التصنيف</option>
+                                    <option value="عقيدة" {{ old('category') == 'عقيدة' ? 'selected' : '' }}>عقيدة</option>
+                                    <option value="فقه" {{ old('category') == 'فقه' ? 'selected' : '' }}>فقه</option>
+                                    <option value="تفسير" {{ old('category') == 'تفسير' ? 'selected' : '' }}>تفسير</option>
+                                    <option value="حديث" {{ old('category') == 'حديث' ? 'selected' : '' }}>حديث</option>
+                                    <option value="سيرة" {{ old('category') == 'سيرة' ? 'selected' : '' }}>سيرة</option>
+                                    <option value="أخلاق" {{ old('category') == 'أخلاق' ? 'selected' : '' }}>أخلاق</option>
+                                    <option value="دعوة" {{ old('category') == 'دعوة' ? 'selected' : '' }}>دعوة</option>
+                                    <option value="تربية" {{ old('category') == 'تربية' ? 'selected' : '' }}>تربية</option>
+                                    <option value="أخرى" {{ old('category') == 'أخرى' ? 'selected' : '' }}>أخرى</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="target_audience" class="form-label">الجمهور المستهدف</label>
+                                <input type="text" class="form-control" id="target_audience" name="target_audience" 
+                                       value="{{ old('target_audience') }}" placeholder="مثال: طلاب العلم، عموم المسلمين">
+                            </div>
+
+                            <div class="col-12 mb-3">
+                                <label for="description" class="form-label">وصف المحاضرة <span class="text-danger">*</span></label>
+                                <textarea class="form-control" id="description" name="description" rows="4" required>{{ old('description') }}</textarea>
+                            </div>
+
+                            <div class="col-12 mb-3">
+                                <label for="prerequisites" class="form-label">المتطلبات المسبقة</label>
+                                <textarea class="form-control" id="prerequisites" name="prerequisites" rows="2" 
+                                          placeholder="ما يجب على الحضور معرفته مسبقاً">{{ old('prerequisites') }}</textarea>
+                            </div>
+                        </div>
+
+                        <!-- التوقيت والمكان -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="text-primary border-bottom pb-2 mb-3">
+                                    <i class="fas fa-calendar-alt me-2"></i>
+                                    التوقيت والمكان
+                                </h5>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="scheduled_at" class="form-label">تاريخ ووقت المحاضرة <span class="text-danger">*</span></label>
+                                <input type="datetime-local" class="form-control" id="scheduled_at" name="scheduled_at" 
+                                       value="{{ old('scheduled_at') }}" required>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="duration" class="form-label">مدة المحاضرة (بالدقائق) <span class="text-danger">*</span></label>
+                                <select class="form-select" id="duration" name="duration" required>
+                                    <option value="">اختر المدة</option>
+                                    <option value="30" {{ old('duration') == '30' ? 'selected' : '' }}>30 دقيقة</option>
+                                    <option value="45" {{ old('duration') == '45' ? 'selected' : '' }}>45 دقيقة</option>
+                                    <option value="60" {{ old('duration') == '60' ? 'selected' : '' }}>ساعة واحدة</option>
+                                    <option value="90" {{ old('duration') == '90' ? 'selected' : '' }}>ساعة ونصف</option>
+                                    <option value="120" {{ old('duration') == '120' ? 'selected' : '' }}>ساعتان</option>
+                                    <option value="180" {{ old('duration') == '180' ? 'selected' : '' }}>3 ساعات</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="location" class="form-label">المكان (للمحاضرات الحضورية)</label>
+                                <input type="text" class="form-control" id="location" name="location" 
+                                       value="{{ old('location') }}" placeholder="مثال: مسجد النور، الرياض">
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="online_link" class="form-label">رابط البث المباشر (للمحاضرات الافتراضية)</label>
+                                <input type="url" class="form-control" id="online_link" name="online_link" 
+                                       value="{{ old('online_link') }}" placeholder="https://zoom.us/j/...">
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="max_attendees" class="form-label">الحد الأقصى للحضور</label>
+                                <input type="number" class="form-control" id="max_attendees" name="max_attendees" 
+                                       value="{{ old('max_attendees') }}" min="1" placeholder="اتركه فارغاً إذا لم يكن هناك حد">
+                            </div>
+                        </div>
+
+                        <!-- التسعير -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="text-primary border-bottom pb-2 mb-3">
+                                    <i class="fas fa-money-bill-wave me-2"></i>
+                                    التسعير
+                                </h5>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">نوع المحاضرة <span class="text-danger">*</span></label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="is_free" id="is_free_yes" 
+                                           value="1" {{ old('is_free', '1') == '1' ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="is_free_yes">
+                                        مجانية
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="is_free" id="is_free_no" 
+                                           value="0" {{ old('is_free') == '0' ? 'checked' : '' }}>
+                                    <label class="form-check-label" for="is_free_no">
+                                        مدفوعة
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 mb-3" id="price_field" style="display: none;">
+                                <label for="price" class="form-label">السعر (ريال سعودي)</label>
+                                <input type="number" class="form-control" id="price" name="price" 
+                                       value="{{ old('price') }}" min="0" step="0.01">
+                            </div>
+                        </div>
+
+                        <!-- الصورة المميزة -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="text-primary border-bottom pb-2 mb-3">
+                                    <i class="fas fa-image me-2"></i>
+                                    الصورة المميزة
+                                </h5>
+                            </div>
+
+                            <div class="col-12 mb-3">
+                                <label for="featured_image" class="form-label">صورة المحاضرة</label>
+                                <input type="file" class="form-control" id="featured_image" name="featured_image" 
+                                       accept="image/*">
+                                <div class="form-text">الحد الأقصى: 2 ميجابايت. الصيغ المدعومة: JPG, PNG, GIF</div>
+                            </div>
+                        </div>
+
+                        <!-- أزرار التحكم -->
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="d-flex justify-content-between">
+                                    <a href="{{ route('lectures.my') }}" class="btn btn-secondary">
+                                        <i class="fas fa-arrow-right me-2"></i>
+                                        العودة لمحاضراتي
+                                    </a>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save me-2"></i>
+                                        حفظ المحاضرة
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const isFreeRadios = document.querySelectorAll('input[name="is_free"]');
+    const priceField = document.getElementById('price_field');
+    
+    function togglePriceField() {
+        const isFree = document.querySelector('input[name="is_free"]:checked').value;
+        if (isFree === '0') {
+            priceField.style.display = 'block';
+            document.getElementById('price').required = true;
+        } else {
+            priceField.style.display = 'none';
+            document.getElementById('price').required = false;
+        }
+    }
+
+    isFreeRadios.forEach(radio => {
+        radio.addEventListener('change', togglePriceField);
+    });
+
+    // تشغيل عند تحميل الصفحة
+    togglePriceField();
+});
+</script>
+</body>
+</html>

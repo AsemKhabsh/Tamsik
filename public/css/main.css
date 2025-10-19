@@ -1,15 +1,45 @@
-/* ألوان أساسية متناسقة مع هوية الموقع الإسلامي */
+/* ========================================
+   ملاحظة: تم نقل جميع المتغيرات إلى unified-theme.css
+   هذا الملف يحتفظ بالمتغيرات للتوافق مع الكود القديم
+   ======================================== */
 :root {
-    --primary-color: #1d8a4e;     /* أخضر إسلامي */
-    --secondary-color: #d4af37;   /* ذهبي */
-    --dark-color: #1a3a4a;        /* أزرق داكن */
-    --light-color: #f8f9fa;       /* أبيض فاتح */
-    --accent-color: #c75c5c;      /* أحمر طوبي */
-    --text-color: #333;           /* لون النص الأساسي */
-    --text-light: #f8f9fa;        /* لون النص الفاتح */
-    --border-color: #e0e0e0;      /* لون الحدود */
-    --bg-light: #f5f5f5;          /* خلفية فاتحة */
-    --bg-dark: #0a2e38;           /* خلفية داكنة */
+    /* الألوان الأساسية */
+    --primary-color: #1d8a4e;        /* أخضر إسلامي */
+    --primary-dark: #0f7346;         /* أخضر داكن */
+    --primary-light: #28a745;        /* أخضر فاتح */
+
+    --secondary-color: #d4af37;      /* ذهبي */
+    --secondary-dark: #b8941f;       /* ذهبي داكن */
+    --secondary-light: #f0d06f;      /* ذهبي فاتح */
+
+    --dark-color: #1a3a4a;           /* أزرق داكن */
+    --light-color: #f8f9fa;          /* أبيض فاتح */
+    --accent-color: #c75c5c;         /* أحمر طوبي */
+
+    /* ألوان النصوص */
+    --text-color: #333;              /* نص أساسي */
+    --text-light: #f8f9fa;           /* نص فاتح */
+    --text-muted: #6c757d;           /* نص باهت */
+    --text-dark: #212529;            /* نص داكن */
+
+    /* ألوان الخلفيات */
+    --bg-light: #f5f5f5;             /* خلفية فاتحة */
+    --bg-dark: #0a2e38;              /* خلفية داكنة */
+    --bg-white: #ffffff;             /* خلفية بيضاء */
+
+    /* ألوان الحدود والظلال */
+    --border-color: #e0e0e0;         /* حدود */
+    --border-light: #f0f0f0;         /* حدود فاتحة */
+
+    /* ألوان الحالات */
+    --success-color: #28a745;
+    --warning-color: #ffc107;
+    --danger-color: #dc3545;
+    --info-color: #17a2b8;
+
+    /* الخطوط */
+    --font-primary: 'Amiri', 'Scheherazade New', serif;
+    --font-secondary: 'Cairo', 'Tajawal', sans-serif;
 }
 
 /* إعدادات عامة */
@@ -20,10 +50,12 @@
 }
 
 body {
-    font-family: 'Amiri', 'Scheherazade New', serif;
+    font-family: var(--font-primary);
     color: var(--text-color);
     line-height: 1.6;
     background-color: var(--light-color);
+    direction: rtl;
+    text-align: right;
 }
 
 .container {

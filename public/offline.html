@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>غير متصل - تمسيك</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Cairo', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1d8a4e 0%, #15693a 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            direction: rtl;
+        }
+
+        .offline-container {
+            background: white;
+            border-radius: 20px;
+            padding: 60px 40px;
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .offline-icon {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 30px;
+            background: linear-gradient(135deg, #f0f0f0 0%, #e0e0e0 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+            color: #999;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        h1 {
+            color: #333;
+            font-size: 32px;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        p {
+            color: #666;
+            font-size: 18px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        .retry-btn {
+            background: linear-gradient(135deg, #1d8a4e 0%, #15693a 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 18px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(29, 138, 78, 0.3);
+        }
+
+        .retry-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(29, 138, 78, 0.4);
+        }
+
+        .retry-btn:active {
+            transform: translateY(0);
+        }
+
+        .offline-tips {
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 2px solid #f0f0f0;
+        }
+
+        .offline-tips h3 {
+            color: #333;
+            font-size: 20px;
+            margin-bottom: 15px;
+        }
+
+        .offline-tips ul {
+            list-style: none;
+            text-align: right;
+        }
+
+        .offline-tips li {
+            color: #666;
+            font-size: 16px;
+            margin-bottom: 10px;
+            padding-right: 25px;
+            position: relative;
+        }
+
+        .offline-tips li::before {
+            content: '✓';
+            position: absolute;
+            right: 0;
+            color: #1d8a4e;
+            font-weight: bold;
+        }
+
+        .connection-status {
+            display: inline-block;
+            padding: 8px 20px;
+            background: #ff6b6b;
+            color: white;
+            border-radius: 20px;
+            font-size: 14px;
+            margin-bottom: 20px;
+            animation: blink 2s ease-in-out infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.7;
+            }
+        }
+
+        .connection-status.online {
+            background: #51cf66;
+            animation: none;
+        }
+
+        @media (max-width: 576px) {
+            .offline-container {
+                padding: 40px 25px;
+            }
+
+            h1 {
+                font-size: 26px;
+            }
+
+            p {
+                font-size: 16px;
+            }
+
+            .offline-icon {
+                width: 100px;
+                height: 100px;
+                font-size: 50px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="offline-container">
+        <div class="connection-status" id="connectionStatus">
+            غير متصل بالإنترنت
+        </div>
+
+        <div class="offline-icon">
+            📡
+        </div>
+
+        <h1>لا يوجد اتصال بالإنترنت</h1>
+        <p>يبدو أنك غير متصل بالإنترنت حالياً. يرجى التحقق من اتصالك والمحاولة مرة أخرى.</p>
+
+        <button class="retry-btn" onclick="retryConnection()">
+            إعادة المحاولة
+        </button>
+
+        <div class="offline-tips">
+            <h3>نصائح للاتصال:</h3>
+            <ul>
+                <li>تحقق من اتصال Wi-Fi أو البيانات الخلوية</li>
+                <li>تأكد من تفعيل وضع الطيران إذا كان مفعلاً</li>
+                <li>أعد تشغيل جهاز التوجيه (Router)</li>
+                <li>جرب الاتصال بشبكة أخرى</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // التحقق من حالة الاتصال
+        function checkConnection() {
+            const statusElement = document.getElementById('connectionStatus');
+            
+            if (navigator.onLine) {
+                statusElement.textContent = 'متصل بالإنترنت';
+                statusElement.classList.add('online');
+                
+                // إعادة التحميل تلقائياً عند الاتصال
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            } else {
+                statusElement.textContent = 'غير متصل بالإنترنت';
+                statusElement.classList.remove('online');
+            }
+        }
+
+        // إعادة المحاولة
+        function retryConnection() {
+            checkConnection();
+            
+            if (navigator.onLine) {
+                window.location.reload();
+            } else {
+                // إظهار رسالة
+                alert('لا يزال الاتصال غير متاح. يرجى التحقق من اتصالك بالإنترنت.');
+            }
+        }
+
+        // مراقبة حالة الاتصال
+        window.addEventListener('online', checkConnection);
+        window.addEventListener('offline', checkConnection);
+
+        // التحقق الأولي
+        checkConnection();
+
+        // التحقق الدوري كل 5 ثوانٍ
+        setInterval(checkConnection, 5000);
+    </script>
+</body>
+</html>
+

@@ -1,16 +1,7 @@
-/* ألوان أساسية متناسقة مع هوية الموقع الإسلامي */
-:root {
-    --primary-color: #1d8a4e;     /* أخضر إسلامي */
-    --secondary-color: #d4af37;   /* ذهبي */
-    --dark-color: #1a3a4a;        /* أزرق داكن */
-    --light-color: #f8f9fa;       /* أبيض فاتح */
-    --accent-color: #c75c5c;      /* أحمر طوبي */
-    --text-color: #333;           /* لون النص الأساسي */
-    --text-light: #f8f9fa;        /* لون النص الفاتح */
-    --border-color: #e0e0e0;      /* لون الحدود */
-    --bg-light: #f5f5f5;          /* خلفية فاتحة */
-    --bg-dark: #0a2e38;           /* خلفية داكنة */
-}
+/* ========================================
+   ملاحظة: تم نقل جميع المتغيرات إلى unified-theme.css
+   يرجى استخدام المتغيرات من unified-theme.css
+   ======================================== */
 
 /* إعدادات عامة */
 * {
@@ -20,10 +11,12 @@
 }
 
 body {
-    font-family: 'Amiri', 'Scheherazade New', serif;
+    font-family: var(--font-primary);
     color: var(--text-color);
     line-height: 1.6;
     background-color: var(--light-color);
+    direction: rtl;
+    text-align: right;
 }
 
 .container {
@@ -312,11 +305,12 @@ header {
     padding: 60px 0;
 }
 
-.sections-grid {
+/* .sections-grid تم تعطيله لاستخدام Bootstrap Grid بدلاً منه */
+/*.sections-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 25px;
-}
+}*/
 
 .section-card {
     background-color: var(--light-color);
