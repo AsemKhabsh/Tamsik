@@ -4,22 +4,33 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Sermon;
+use App\Models\Fatwa;
+use App\Services\ScholarService;
+use App\Services\FatwaService;
 use Illuminate\Http\Request;
 
 class ScholarController extends Controller
 {
+    protected $scholarService;
+    protected $fatwaService;
+
+    public function __construct(ScholarService $scholarService, FatwaService $fatwaService)
+    {
+        $this->scholarService = $scholarService;
+        $this->fatwaService = $fatwaService;
+    }
     /**
      * عرض قائمة العلماء
      */
     public function index()
     {
-        $scholars = User::where('user_type', 'scholar')
-            ->where('is_active', true)
-            ->orderBy('name', 'asc')
-            ->paginate(12);
+        $scholars = $this->scholarService->getAllScholars(12);
 
-        // الحصول على الفتاوى الحديثة (مؤقتاً فارغة حتى ننشئ model للفتاوى)
-        $recentFatwas = collect([]);
+        // الحصول على الفتاوى الحديثة
+        $recentFatwas = $this->fatwaService->getRecentFatwas(5);
+
+        // إحصائيات الفتاوى
+        $fatwaStats = $this->fatwaService->getFatwaStats();
 
         // إحصائيات الفتاوى حسب التصنيف
         $worshipFatwasCount = 0;
@@ -29,8 +40,8 @@ class ScholarController extends Controller
         $ethicsFatwasCount = 0;
 
         // إحصائيات عامة
-        $totalFatwas = 0;
-        $pendingQuestions = 0;
+        $totalFatwas = $fatwaStats['total'] ?? 0;
+        $pendingQuestions = $fatwaStats['unanswered'] ?? 0;
         $activeUsers = User::count();
 
         return view('scholars.index', compact(
@@ -52,29 +63,18 @@ class ScholarController extends Controller
      */
     public function show($id)
     {
-        $scholar = User::where('is_active', true)
-            ->findOrFail($id);
+        $scholar = $this->scholarService->getScholarById($id);
 
         // خطب العالم
-        $sermons = Sermon::where('author_id', $scholar->id)
-            ->where('is_published', true)
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
+        $sermons = $this->scholarService->getScholarSermons($id, 10);
+
+        // فتاوى العالم
+        $fatwas = $this->scholarService->getScholarFatwas($id, 10);
 
         // إحصائيات العالم
-        $stats = [
-            'sermons_count' => Sermon::where('author_id', $scholar->id)
-                ->where('is_published', true)
-                ->count(),
-            'total_views' => Sermon::where('author_id', $scholar->id)
-                ->where('is_published', true)
-                ->sum('views_count'),
-            'total_downloads' => Sermon::where('author_id', $scholar->id)
-                ->where('is_published', true)
-                ->sum('downloads_count'),
-        ];
+        $stats = $this->scholarService->getScholarStats($id);
 
-        return view('scholars.show', compact('scholar', 'sermons', 'stats'));
+        return view('scholars.show', compact('scholar', 'sermons', 'fatwas', 'stats'));
     }
 
     /**
@@ -82,10 +82,7 @@ class ScholarController extends Controller
      */
     public function askQuestion()
     {
-        $scholars = User::where('user_type', 'scholar')
-            ->where('is_active', true)
-            ->orderBy('name', 'asc')
-            ->get();
+        $scholars = $this->scholarService->getAllScholars(100);
 
         return view('scholars.ask-question', compact('scholars'));
     }

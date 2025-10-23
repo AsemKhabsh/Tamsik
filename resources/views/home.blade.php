@@ -122,7 +122,7 @@
 <section class="stats-section py-5">
     <div class="container">
         <div class="row">
-            <div class="col-md-3 col-sm-6 mb-4">
+            <div class="col-md-4 col-sm-6 mb-4">
                 <div class="enhanced-stats-card" data-aos="fade-up" data-aos-delay="100">
                     <div class="stats-icon">
                         <i class="fas fa-microphone"></i>
@@ -135,21 +135,8 @@
                     <div class="stats-decoration"></div>
                 </div>
             </div>
-            <div class="col-md-3 col-sm-6 mb-4">
+            <div class="col-md-4 col-sm-6 mb-4">
                 <div class="enhanced-stats-card" data-aos="fade-up" data-aos-delay="200">
-                    <div class="stats-icon">
-                        <i class="fas fa-balance-scale"></i>
-                    </div>
-                    <div class="stats-content">
-                        <div class="stats-number" data-count="{{ $stats['fatwas'] ?? 0 }}">0</div>
-                        <h5 class="stats-title">فتوى</h5>
-                        <p class="stats-description">فتاوى شرعية موثقة</p>
-                    </div>
-                    <div class="stats-decoration"></div>
-                </div>
-            </div>
-            <div class="col-md-3 col-sm-6 mb-4">
-                <div class="enhanced-stats-card" data-aos="fade-up" data-aos-delay="300">
                     <div class="stats-icon">
                         <i class="fas fa-chalkboard-teacher"></i>
                     </div>
@@ -161,8 +148,8 @@
                     <div class="stats-decoration"></div>
                 </div>
             </div>
-            <div class="col-md-3 col-sm-6 mb-4">
-                <div class="enhanced-stats-card" data-aos="fade-up" data-aos-delay="400">
+            <div class="col-md-4 col-sm-6 mb-4">
+                <div class="enhanced-stats-card" data-aos="fade-up" data-aos-delay="300">
                     <div class="stats-icon">
                         <i class="fas fa-user-graduate"></i>
                     </div>
@@ -518,7 +505,7 @@
                             </p>
 
                             <div class="card-footer">
-                                <a href="{{ route('sermons.index') }}" class="read-more-btn">
+                                <a href="{{ route('sermons.show', $sermon->id) }}" class="read-more-btn">
                                     <span>قراءة المزيد</span>
                                     <i class="fas fa-arrow-left"></i>
                                 </a>
@@ -607,7 +594,7 @@
                             </p>
 
                             <div class="article-footer">
-                                <a href="{{ route('thinkers.index') }}" class="read-article-btn">
+                                <a href="{{ route('articles.show', $article->id) }}" class="read-article-btn">
                                     <span>قراءة المقال</span>
                                     <i class="fas fa-arrow-left"></i>
                                 </a>
@@ -716,7 +703,7 @@
                             </div>
 
                             <div class="lecture-footer">
-                                <a href="{{ route('lectures.index') }}" class="lecture-btn">
+                                <a href="{{ route('lectures.show', $lecture->id) }}" class="lecture-btn">
                                     <i class="fas fa-info-circle me-2"></i>
                                     تفاصيل المحاضرة
                                 </a>

@@ -4,15 +4,13 @@
 
 @push('styles')
 <style>
-        body {
-            font-family: 'Amiri', serif;
+        .login-page-wrapper {
             background: linear-gradient(135deg, #1d8a4e, #d4af37);
-            min-height: 100vh;
+            min-height: calc(100vh - 120px);
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0;
-            padding: 20px;
+            padding: 60px 20px;
         }
         
         .auth-container {
@@ -166,30 +164,13 @@
             z-index: 2;
         }
         
-        .back-link {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            color: white;
-            text-decoration: none;
-            font-weight: bold;
-            background: rgba(255,255,255,0.2);
-            padding: 10px 15px;
-            border-radius: 8px;
-            transition: all 0.3s;
-        }
-        
-        .back-link:hover {
-            background: rgba(255,255,255,0.3);
-        }
+
 </style>
 @endpush
 
 @section('content')
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-md-5">
-            <div class="auth-container">
+<div class="login-page-wrapper">
+    <div class="auth-container">
         <div class="auth-header">
             <div class="auth-logo">
                 <i class="fas fa-mosque"></i>
@@ -248,7 +229,4 @@
             <p><a href="#" class="auth-link">نسيت كلمة المرور؟</a></p>
         </div>
     </div>
-</div>
-</div>
-</div>
 @endsection

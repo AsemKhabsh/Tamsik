@@ -27,6 +27,9 @@
 
     <!-- Additional CSS Files (only if needed for specific pages) -->
     <link rel="stylesheet" href="{{ asset('css/home.css') }}?v=1.0.0">
+    <link rel="stylesheet" href="{{ asset('css/scholars.css') }}?v=1.0.0">
+    <link rel="stylesheet" href="{{ asset('css/thinkers.css') }}?v=1.0.0">
+    <link rel="stylesheet" href="{{ asset('css/lectures.css') }}?v=1.0.0">
     
     <style>
         /* تطبيق الخطوط من التصميم الموحد */
@@ -43,7 +46,8 @@
         .navbar-brand {
             font-weight: 700;
             font-size: 1.8rem;
-            color: var(--primary-color, #1d8a4e) !important;
+            color: #d4af37 !important;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         }
 
         .navbar {
@@ -97,7 +101,7 @@
         }
         
         .footer {
-            background: #2c5530;
+            background: var(--bg-dark, #1a3a4a);
             color: white;
             padding: 40px 0 20px;
             margin-top: 50px;
@@ -158,10 +162,35 @@
             .hero-section {
                 padding: 50px 0;
             }
-            
+
             .navbar-brand {
                 font-size: 1.5rem;
             }
+        }
+
+        /* Footer Styling */
+        .footer {
+            background: linear-gradient(135deg, #0f7346 0%, #1d8a4e 100%) !important;
+            color: #f8f9fa !important;
+            padding: 60px 0 20px 0;
+        }
+
+        .footer h5 {
+            color: #d4af37 !important;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .footer .text-light {
+            color: #f8f9fa !important;
+        }
+
+        .footer .text-light:hover {
+            color: #d4af37 !important;
+        }
+
+        .footer hr {
+            border-color: rgba(255, 255, 255, 0.2) !important;
         }
     </style>
     
@@ -350,9 +379,9 @@
                     <h5>روابط سريعة</h5>
                     <ul class="list-unstyled">
                         <li><a href="{{ route('sermons.index') }}" class="text-light text-decoration-none">الخطب</a></li>
-                        <li><a href="{{ route('fatwas.index') }}" class="text-light text-decoration-none">الفتاوى</a></li>
                         <li><a href="{{ route('lectures.index') }}" class="text-light text-decoration-none">المحاضرات</a></li>
                         <li><a href="{{ route('articles.index') }}" class="text-light text-decoration-none">المقالات</a></li>
+                        <li><a href="{{ route('scholars.index') }}" class="text-light text-decoration-none">العلماء</a></li>
                     </ul>
                 </div>
                 <div class="col-md-4 mb-4">

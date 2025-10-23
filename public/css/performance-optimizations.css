@@ -291,7 +291,8 @@ html {
    14. تحسين الـ Dark Mode
    ============================================ */
 
-@media (prefers-color-scheme: dark) {
+/* تم تعطيل التطبيق التلقائي للوضع الليلي - يتم التفعيل فقط عند الضغط على الزر */
+/* @media (prefers-color-scheme: dark) {
     :root {
         --bg-light: #1a1a1a;
         --bg-white: #2d2d2d;
@@ -314,6 +315,65 @@ html {
         background: linear-gradient(90deg, #2d2d2d 25%, #3d3d3d 50%, #2d2d2d 75%);
         background-size: 200% 100%;
     }
+} */
+
+/* الوضع الليلي يتم تطبيقه فقط عند إضافة class="dark-mode" للـ body */
+body.dark-mode {
+    background-color: #1a1a1a !important;
+    color: #e8e8e8 !important;
+}
+
+body.dark-mode .optimized-card,
+body.dark-mode .card,
+body.dark-mode .scholar-card,
+body.dark-mode .thinker-card,
+body.dark-mode .lecture-card,
+body.dark-mode .article-card {
+    background: #2d2d2d !important;
+    border-color: #404040 !important;
+    color: #e8e8e8 !important;
+}
+
+body.dark-mode h1,
+body.dark-mode h2,
+body.dark-mode h3,
+body.dark-mode h4,
+body.dark-mode h5,
+body.dark-mode h6 {
+    color: #d4af37 !important;
+}
+
+body.dark-mode .text-muted {
+    color: #b0b0b0 !important;
+}
+
+body.dark-mode .btn-primary {
+    background: linear-gradient(135deg, #1d8a4e 0%, #28a745 100%) !important;
+    border-color: #1d8a4e !important;
+    color: #ffffff !important;
+}
+
+body.dark-mode .btn-outline-primary {
+    border-color: #1d8a4e !important;
+    color: #1d8a4e !important;
+}
+
+body.dark-mode .btn-outline-primary:hover {
+    background: #1d8a4e !important;
+    color: #ffffff !important;
+}
+
+body.dark-mode .navbar {
+    background: linear-gradient(135deg, #0a4d2e 0%, #0f7346 100%) !important;
+}
+
+body.dark-mode .footer {
+    background: linear-gradient(135deg, #0a4d2e 0%, #0f7346 100%) !important;
+}
+
+body.dark-mode .skeleton-loader {
+    background: linear-gradient(90deg, #2d2d2d 25%, #3d3d3d 50%, #2d2d2d 75%) !important;
+    background-size: 200% 100%;
 }
 
 /* ============================================

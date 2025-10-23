@@ -200,24 +200,22 @@
     }
 }
 
-/* Dark Mode Support */
-@media (prefers-color-scheme: dark) {
-    .toast {
-        background: #2d2d2d;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    }
-    
-    .toast-message {
-        color: #e0e0e0;
-    }
-    
-    .toast-close {
-        color: #999;
-    }
-    
-    .toast-close:hover {
-        background: rgba(255, 255, 255, 0.1);
-        color: #ccc;
-    }
+/* Dark Mode Support - يتم التطبيق فقط عند إضافة class="dark-mode" للـ body */
+body.dark-mode .toast {
+    background: #2d2d2d !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+}
+
+body.dark-mode .toast-message {
+    color: #e0e0e0 !important;
+}
+
+body.dark-mode .toast-close {
+    color: #999 !important;
+}
+
+body.dark-mode .toast-close:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: #ccc !important;
 }
 

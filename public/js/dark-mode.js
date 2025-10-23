@@ -30,15 +30,13 @@ class DarkModeToggle {
      */
     loadSavedMode() {
         const savedMode = localStorage.getItem(this.darkModeKey);
-        
+
+        // تطبيق الوضع الليلي فقط إذا كان محفوظاً بشكل صريح
         if (savedMode === 'enabled') {
             document.body.classList.add('dark-mode');
-        } else if (savedMode === null) {
-            // إذا لم يكن هناك تفضيل محفوظ، استخدم تفضيل النظام
-            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                document.body.classList.add('dark-mode');
-            }
         }
+        // لا نطبق الوضع الليلي تلقائياً بناءً على تفضيلات النظام
+        // الوضع الافتراضي هو النهاري دائماً
     }
 
     /**
@@ -101,23 +99,12 @@ class DarkModeToggle {
     }
 
     /**
-     * مراقبة تفضيلات النظام
+     * مراقبة تفضيلات النظام - معطل
+     * الوضع الافتراضي هو النهاري دائماً
      */
     watchSystemPreference() {
-        if (window.matchMedia) {
-            const darkModeQuery = window.matchMedia('(prefers-color-scheme: dark)');
-            
-            darkModeQuery.addEventListener('change', (e) => {
-                // فقط إذا لم يكن هناك تفضيل محفوظ
-                if (localStorage.getItem(this.darkModeKey) === null) {
-                    if (e.matches) {
-                        document.body.classList.add('dark-mode');
-                    } else {
-                        document.body.classList.remove('dark-mode');
-                    }
-                }
-            });
-        }
+        // تم تعطيل المراقبة التلقائية لتفضيلات النظام
+        // المستخدم يجب أن يختار الوضع الليلي بشكل صريح
     }
 }
 

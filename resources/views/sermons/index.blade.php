@@ -100,6 +100,35 @@
         color: var(--text-muted);
     }
 
+    .sermon-actions {
+        margin-top: 15px;
+    }
+
+    .btn-view-sermon {
+        display: block;
+        width: 100%;
+        padding: 12px 20px;
+        background: linear-gradient(135deg, #1d8a4e, #0f7346);
+        color: white;
+        text-align: center;
+        text-decoration: none;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        border: none;
+    }
+
+    .btn-view-sermon:hover {
+        background: linear-gradient(135deg, #0f7346, #1d8a4e);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(29, 138, 78, 0.3);
+        color: white;
+    }
+
+    .btn-view-sermon i {
+        margin-left: 8px;
+    }
+
     .search-section {
         background: var(--bg-white);
         padding: 25px;
@@ -273,6 +302,14 @@
                                 <i class="fas fa-calendar"></i>
                                 {{ $sermon->published_at->format('Y/m/d') }}
                             </div>
+                        </div>
+
+                        <!-- زر عرض الخطبة -->
+                        <div class="sermon-actions mt-3">
+                            <a href="{{ route('sermons.show', $sermon->id) }}" class="btn-view-sermon">
+                                <i class="fas fa-book-open me-2"></i>
+                                عرض الخطبة
+                            </a>
                         </div>
                     </div>
                 </div>

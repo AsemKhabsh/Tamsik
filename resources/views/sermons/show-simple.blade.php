@@ -32,36 +32,45 @@
         }
         
         .sermon-header {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            margin-bottom: 30px;
+            background: white !important;
+            padding: 30px !important;
+            border-radius: 10px !important;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1) !important;
+            margin-bottom: 30px !important;
+            display: block !important;
         }
-        
+
         .sermon-title {
-            color: #1d8a4e;
-            font-size: 2.5rem;
-            margin-bottom: 20px;
-            font-weight: bold;
+            color: #1d8a4e !important;
+            font-size: 2.5rem !important;
+            margin-bottom: 25px !important;
+            padding-bottom: 20px !important;
+            font-weight: bold !important;
+            text-align: center !important;
+            border-bottom: 2px solid #f0f0f0 !important;
         }
-        
+
         .sermon-meta {
-            display: flex;
-            gap: 20px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+            gap: 30px !important;
+            margin-bottom: 20px !important;
+            flex-wrap: wrap !important;
         }
         
         .meta-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: #666;
+            display: flex !important;
+            align-items: center !important;
+            gap: 8px !important;
+            color: #666 !important;
+            white-space: nowrap !important;
+            font-weight: 500 !important;
         }
-        
+
         .meta-item i {
-            color: #1d8a4e;
+            color: #1d8a4e !important;
+            font-size: 1rem !important;
         }
         
         .sermon-content {
@@ -149,6 +158,35 @@
             align-items: flex-start;
             gap: 10px;
         }
+
+        /* تنسيقات متجاوبة */
+        @media (max-width: 768px) {
+            .sermon-title {
+                font-size: 1.8rem !important;
+            }
+
+            .sermon-meta {
+                gap: 15px !important;
+            }
+
+            .meta-item {
+                font-size: 0.9rem !important;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .sermon-title {
+                font-size: 1.5rem !important;
+            }
+
+            .sermon-meta {
+                gap: 10px !important;
+            }
+
+            .meta-item {
+                font-size: 0.85rem !important;
+            }
+        }
         
         .reference-item i {
             color: #1d8a4e;
@@ -177,7 +215,7 @@
                 </div>
                 <div class="meta-item">
                     <i class="fas fa-calendar"></i>
-                    <span>{{ $sermon->created_at->format('d/m/Y') }}</span>
+                    <span>{{ ($sermon->published_at ?? $sermon->created_at)->format('d/m/Y') }}</span>
                 </div>
                 <div class="meta-item">
                     <i class="fas fa-eye"></i>
@@ -208,7 +246,7 @@
         <div class="sermon-content">
             <h3 style="color: #1d8a4e; margin-bottom: 20px;">محتوى الخطبة</h3>
             <div class="sermon-text">
-                {!! nl2br(e($sermon->content)) !!}
+                {!! $sermon->content !!}
             </div>
             
             @if($sermon->tags && count($sermon->tags ?? []) > 0)

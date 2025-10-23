@@ -113,10 +113,10 @@
                             </div>
 
                             <div class="lecture-actions">
-                                <button class="btn btn-primary btn-sm">
+                                <a href="{{ route('lectures.show', $lecture->id) }}" class="btn btn-primary btn-sm">
                                     <i class="fas fa-info-circle me-1"></i>
                                     التفاصيل
-                                </button>
+                                </a>
                                 @if(($lecture->status ?? 'upcoming') === 'upcoming')
                                     <button class="btn btn-outline-success btn-sm">
                                         <i class="fas fa-bell me-1"></i>

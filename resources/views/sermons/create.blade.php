@@ -534,9 +534,7 @@
         #content + .ck-editor .ck-editor__editable {
             min-height: 400px;
         }
-    </script>
-@endpush
-</style>
+    </style>
 @endpush
 
 @endsection

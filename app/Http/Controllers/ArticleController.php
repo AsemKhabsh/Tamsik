@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Article;
 use App\Models\Category;
+use App\Services\ArticleService;
 use App\Http\Requests\StoreArticleRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -11,27 +12,24 @@ use Illuminate\Support\Str;
 
 class ArticleController extends Controller
 {
+    protected $articleService;
+
+    public function __construct(ArticleService $articleService)
+    {
+        $this->articleService = $articleService;
+    }
     /**
      * عرض مقال للزوار
      */
     public function show($id)
     {
-        $article = Article::with(['author', 'category', 'comments.user'])->findOrFail($id);
+        $article = $this->articleService->getArticleById($id);
 
         // زيادة عدد المشاهدات
-        $article->increment('views_count');
+        $this->articleService->incrementViews($id);
 
         // المقالات ذات الصلة
-        $relatedArticles = Article::published()
-            ->where('id', '!=', $article->id)
-            ->where(function($query) use ($article) {
-                if ($article->category_id) {
-                    $query->where('category_id', $article->category_id);
-                }
-            })
-            ->latest()
-            ->take(3)
-            ->get();
+        $relatedArticles = $this->articleService->getRelatedArticles($id, 3);
 
         return view('articles.show', compact('article', 'relatedArticles'));
     }

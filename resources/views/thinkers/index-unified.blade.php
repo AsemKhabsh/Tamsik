@@ -170,7 +170,7 @@
                                     </div>
                                 </div>
                                 <div class="card-footer bg-transparent">
-                                    <a href="#" class="btn btn-sm btn-outline-primary w-100">
+                                    <a href="{{ route('articles.show', $article->id) }}" class="btn btn-sm btn-outline-primary w-100">
                                         <i class="fas fa-book-open me-1"></i>
                                         قراءة المقال
                                     </a>

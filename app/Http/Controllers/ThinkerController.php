@@ -13,43 +13,66 @@ class ThinkerController extends Controller
      */
     public function index()
     {
-        $thinkers = User::where('is_active', true)
+        // المفكرون المميزون
+        $featuredThinkers = User::where('is_active', true)
+            ->where('user_type', 'thinker')
             ->orderBy('name', 'asc')
-            ->paginate(12);
+            ->take(6)
+            ->get();
 
-        // استخدام Article model للمقالات - مع التحقق من وجود البيانات
-        try {
-            $articles = Article::published()->recent()->with('author')->take(10)->get();
-        } catch (\Exception $e) {
-            // في حالة عدم وجود مقالات، إنشاء مجموعة فارغة
-            $articles = collect();
-        }
-
-        $featuredThinkers = $thinkers->take(6);
+        // أحدث المقالات
+        $articles = Article::with(['author', 'category'])
+            ->where('is_published', true)
+            ->orderBy('created_at', 'desc')
+            ->take(10)
+            ->get();
 
         // إحصائيات التصنيفات
-        $islamicThoughtCount = 0;
-        $dawahCount = 0;
-        $educationCount = 0;
-        $societyCount = 0;
-        $youthCount = 0;
-        $contemporaryCount = 0;
+        $islamicThoughtCount = Article::where('is_published', true)
+            ->whereHas('category', function($q) {
+                $q->where('name', 'like', '%فكر%')->orWhere('name', 'like', '%إسلامي%');
+            })
+            ->count();
 
-        // إحصائيات عامة
-        $totalViews = 0;
-        $totalComments = 0;
+        $dawahCount = Article::where('is_published', true)
+            ->whereHas('category', function($q) {
+                $q->where('name', 'like', '%دعوة%')->orWhere('name', 'like', '%إرشاد%');
+            })
+            ->count();
+
+        $educationCount = Article::where('is_published', true)
+            ->whereHas('category', function($q) {
+                $q->where('name', 'like', '%تربية%')->orWhere('name', 'like', '%تعليم%');
+            })
+            ->count();
+
+        $societyCount = Article::where('is_published', true)
+            ->whereHas('category', function($q) {
+                $q->where('name', 'like', '%مجتمع%')->orWhere('name', 'like', '%أسرة%');
+            })
+            ->count();
+
+        $youthCount = Article::where('is_published', true)
+            ->whereHas('category', function($q) {
+                $q->where('name', 'like', '%شباب%');
+            })
+            ->count();
+
+        $contemporaryCount = Article::where('is_published', true)
+            ->whereHas('category', function($q) {
+                $q->where('name', 'like', '%معاصر%')->orWhere('name', 'like', '%قضايا%');
+            })
+            ->count();
 
         return view('thinkers.index-unified', compact(
-            'articles',
             'featuredThinkers',
+            'articles',
             'islamicThoughtCount',
             'dawahCount',
             'educationCount',
             'societyCount',
             'youthCount',
-            'contemporaryCount',
-            'totalViews',
-            'totalComments'
+            'contemporaryCount'
         ));
     }
 

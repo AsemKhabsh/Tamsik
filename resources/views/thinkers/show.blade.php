@@ -218,7 +218,7 @@
                 @foreach($articles as $article)
                     <div class="article-card">
                         <h4>
-                            <a href="#" class="article-title">
+                            <a href="{{ route('articles.show', $article->id) }}" class="article-title">
                                 {{ $article->title }}
                             </a>
                         </h4>

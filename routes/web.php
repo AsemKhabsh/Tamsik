@@ -269,10 +269,19 @@ Route::middleware('auth')->group(function () {
     })->name('favorites');
 });
 
-// Placeholder routes للصفحات التي لم يتم إنشاؤها بعد
-Route::get('/fatwas', function() {
-    return view('coming-soon', ['title' => 'الفتاوى']);
-})->name('fatwas.index');
+// مسارات الفتاوى العامة (للزوار)
+Route::get('/fatwas', [\App\Http\Controllers\FatwaController::class, 'index'])->name('fatwas.index');
+Route::get('/fatwas/category/{category}', [\App\Http\Controllers\FatwaController::class, 'byCategory'])->name('fatwas.category');
+Route::get('/fatwas/scholar/{scholarId}', [\App\Http\Controllers\FatwaController::class, 'byScholar'])->name('fatwas.scholar');
+Route::get('/fatwas/search', [\App\Http\Controllers\FatwaController::class, 'search'])->name('fatwas.search')->middleware('throttle:60,1');
+Route::get('/fatwas/{id}', [\App\Http\Controllers\FatwaController::class, 'show'])->name('fatwas.show');
+
+// مسارات طرح الأسئلة (تتطلب تسجيل دخول)
+Route::middleware('auth')->group(function () {
+    Route::get('/ask-question', [\App\Http\Controllers\QuestionController::class, 'create'])->name('questions.ask');
+    Route::post('/ask-question', [\App\Http\Controllers\QuestionController::class, 'store'])->name('questions.store');
+    Route::get('/my-questions', [\App\Http\Controllers\QuestionController::class, 'myQuestions'])->name('questions.my');
+});
 
 Route::get('/articles', function() {
     return view('coming-soon', ['title' => 'المقالات']);

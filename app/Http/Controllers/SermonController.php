@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Sermon;
 use App\Models\User;
+use App\Services\SermonService;
 use App\Http\Requests\StoreSermonRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -11,46 +12,29 @@ use Illuminate\Support\Facades\Storage;
 
 class SermonController extends Controller
 {
+    protected $sermonService;
+
+    public function __construct(SermonService $sermonService)
+    {
+        $this->sermonService = $sermonService;
+    }
     /**
      * عرض قائمة الخطب
      */
     public function index(Request $request)
     {
-        $query = Sermon::published()->with(['author', 'scholar']);
-
         // البحث
         if ($request->has('search') && $request->search) {
-            $query->search($request->search);
+            $sermons = $this->sermonService->searchSermons($request->search, 12);
+        } else {
+            $sermons = $this->sermonService->getAllSermons(12);
         }
-
-        // التصفية حسب التصنيف
-        if ($request->has('category') && $request->category !== 'all') {
-            $query->byCategory($request->category);
-        }
-
-        // الترتيب
-        $sortBy = $request->get('sort', 'newest');
-        switch ($sortBy) {
-            case 'oldest':
-                $query->orderBy('published_at', 'asc');
-                break;
-            case 'popular':
-                $query->orderBy('views_count', 'desc');
-                break;
-            case 'downloads':
-                $query->orderBy('downloads_count', 'desc');
-                break;
-            default:
-                $query->orderBy('published_at', 'desc');
-        }
-
-        $sermons = $query->paginate(12);
 
         // التصنيفات المتاحة من Config
         $categories = config('categories.sermons');
 
         // الخطب المميزة
-        $featuredSermons = $sermons->where('is_featured', true)->take(6);
+        $featuredSermons = $this->sermonService->getPopularSermons(6);
 
         return view('sermons.index', compact('sermons', 'categories', 'featuredSermons'));
     }
@@ -60,18 +44,13 @@ class SermonController extends Controller
      */
     public function show($id)
     {
-        $sermon = Sermon::published()
-            ->findOrFail($id);
+        $sermon = $this->sermonService->getSermonById($id);
 
         // زيادة عدد المشاهدات
-        $sermon->incrementViews();
+        $this->sermonService->incrementViews($id);
 
         // الخطب ذات الصلة
-        $relatedSermons = Sermon::published()
-            ->where('id', '!=', $sermon->id)
-            ->where('category', $sermon->category)
-            ->limit(4)
-            ->get();
+        $relatedSermons = $this->sermonService->getRelatedSermons($id, 4);
 
         // التحقق من إضافة الخطبة للمفضلات (للمستخدمين المسجلين)
         $isFavorited = false;
@@ -154,10 +133,10 @@ class SermonController extends Controller
      */
     public function download($id)
     {
-        $sermon = Sermon::published()->findOrFail($id);
+        $sermon = $this->sermonService->getSermonById($id);
 
         // زيادة عدد التحميلات
-        $sermon->incrementDownloads();
+        $this->sermonService->incrementDownloads($id);
 
         // إنشاء محتوى نصي للخطبة
         $content = $this->generateSermonText($sermon);

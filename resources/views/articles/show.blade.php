@@ -5,9 +5,9 @@
 
 @section('content')
 <div class="container py-5">
-    <div class="row">
+    <div class="row justify-content-center">
         <!-- Main Content -->
-        <div class="col-lg-8">
+        <div class="col-lg-10 col-xl-9">
             <!-- Article Header -->
             <article class="article-content">
                 <!-- Featured Image -->
@@ -69,21 +69,37 @@
                 </div>
 
                 <!-- Tags -->
-                @if($article->tags && count($article->tags) > 0)
-                    <div class="article-tags mb-4">
-                        <h6 class="mb-3">
-                            <i class="fas fa-tags me-2"></i>
-                            الكلمات المفتاحية:
-                        </h6>
-                        <div class="d-flex flex-wrap gap-2">
-                            @foreach($article->tags as $tag)
-                                <span class="badge bg-light text-dark border">
-                                    <i class="fas fa-tag me-1"></i>
-                                    {{ $tag }}
-                                </span>
-                            @endforeach
+                @if($article->tags)
+                    @php
+                        // فك تشفير JSON إذا كان string
+                        if (is_string($article->tags)) {
+                            $tagsArray = json_decode($article->tags, true);
+                            // إذا فشل JSON decode، جرب explode
+                            if (!is_array($tagsArray)) {
+                                $tagsArray = explode(',', $article->tags);
+                            }
+                        } else {
+                            $tagsArray = $article->tags;
+                        }
+                        $tagsArray = array_filter(array_map('trim', $tagsArray));
+                    @endphp
+
+                    @if(count($tagsArray) > 0)
+                        <div class="article-tags mb-4">
+                            <h6 class="mb-3">
+                                <i class="fas fa-tags me-2"></i>
+                                الكلمات المفتاحية:
+                            </h6>
+                            <div class="d-flex flex-wrap gap-2">
+                                @foreach($tagsArray as $tag)
+                                    <span class="badge bg-success text-white" style="font-size: 0.9rem; padding: 8px 15px;">
+                                        <i class="fas fa-tag me-1"></i>
+                                        {!! $tag !!}
+                                    </span>
+                                @endforeach
+                            </div>
                         </div>
-                    </div>
+                    @endif
                 @endif
 
                 <!-- Social Share -->

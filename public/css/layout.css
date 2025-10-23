@@ -138,7 +138,7 @@ header {
 
 /* تنسيق الفوتر */
 footer {
-    background-color: var(--bg-dark);
+    background: linear-gradient(135deg, #0f7346 0%, #1d8a4e 100%);
     color: var(--text-light);
     padding-top: 60px;
 }
@@ -151,10 +151,11 @@ footer {
 }
 
 .footer-about h3, .footer-links h3, .footer-contact h3 {
-    color: var(--secondary-color);
+    color: #d4af37;
     margin-bottom: 20px;
     position: relative;
     padding-bottom: 10px;
+    font-weight: bold;
 }
 
 .footer-about h3::after, .footer-links h3::after, .footer-contact h3::after {

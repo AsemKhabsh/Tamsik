@@ -380,7 +380,7 @@
 
         <!-- 6️⃣ التفاصيل الإضافية -->
         <div class="card shadow-sm mb-4">
-            <div class="card-header bg-dark text-white">
+            <div class="card-header bg-primary text-white">
                 <h5 class="card-title mb-0">
                     <i class="fas fa-cog me-2"></i>
                     ⚙️ التفاصيل الإضافية
