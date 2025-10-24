@@ -94,6 +94,29 @@
                     @endauth
                 </div>
 
+                <!-- Favorite Button -->
+                <div class="mt-3">
+                    @auth
+                        @php
+                            $isFavorited = auth()->user()->favorites()
+                                ->where('favoritable_type', \App\Models\Fatwa::class)
+                                ->where('favoritable_id', $fatwa->id)
+                                ->exists();
+                        @endphp
+                        <button class="btn {{ $isFavorited ? 'btn-warning' : 'btn-outline-warning' }} btn-lg"
+                                id="favoriteBtn"
+                                onclick="toggleFavorite()">
+                            <i class="{{ $isFavorited ? 'fas' : 'far' }} fa-bookmark me-2" id="favoriteIcon"></i>
+                            {{ $isFavorited ? 'محفوظة' : 'حفظ' }}
+                        </button>
+                    @else
+                        <a href="{{ route('login') }}" class="btn btn-outline-warning btn-lg">
+                            <i class="far fa-bookmark me-2"></i>
+                            حفظ
+                        </a>
+                    @endauth
+                </div>
+
                 <!-- Share Buttons -->
                 <div class="share-section mt-4">
                     <h5 class="mb-3">شارك هذه الفتوى:</h5>
@@ -357,6 +380,47 @@ function toggleLike() {
     .catch(error => {
         console.error('Error:', error);
         showToast('حدث خطأ أثناء الإعجاب. حاول مرة أخرى.', 'error');
+    });
+}
+
+// Favorite functionality
+function toggleFavorite() {
+    const favoriteBtn = document.getElementById('favoriteBtn');
+    const favoriteIcon = document.getElementById('favoriteIcon');
+
+    fetch('{{ route("favorites.toggle") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({
+            favoritable_type: '{{ \App\Models\Fatwa::class }}',
+            favoritable_id: {{ $fatwa->id }}
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            if (data.is_favorited) {
+                favoriteIcon.classList.remove('far');
+                favoriteIcon.classList.add('fas');
+                favoriteBtn.classList.remove('btn-outline-warning');
+                favoriteBtn.classList.add('btn-warning');
+                favoriteBtn.innerHTML = '<i class="fas fa-bookmark me-2"></i> محفوظة';
+            } else {
+                favoriteIcon.classList.remove('fas');
+                favoriteIcon.classList.add('far');
+                favoriteBtn.classList.remove('btn-warning');
+                favoriteBtn.classList.add('btn-outline-warning');
+                favoriteBtn.innerHTML = '<i class="far fa-bookmark me-2"></i> حفظ';
+            }
+            showToast(data.message, 'success');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('حدث خطأ أثناء الحفظ. حاول مرة أخرى.', 'error');
     });
 }
 

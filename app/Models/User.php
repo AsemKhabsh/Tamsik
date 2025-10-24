@@ -95,6 +95,12 @@ class User extends Authenticatable
         return $this->hasMany(Rating::class);
     }
 
+    // المفضلات التي أضافها المستخدم
+    public function favorites()
+    {
+        return $this->hasMany(Favorite::class);
+    }
+
     /**
      * الدوال المساعدة
      */

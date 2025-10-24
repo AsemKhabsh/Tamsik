@@ -274,9 +274,9 @@ use App\Models\Rating;
                 </div>
             @endif
 
-            <!-- Like and Rating Section -->
+            <!-- Like, Favorite and Rating Section -->
             <div class="sermon-actions" style="margin-top: 30px;">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
                     <!-- Like Button -->
                     <div>
                         @auth
@@ -294,6 +294,31 @@ use App\Models\Rating;
                                 <i class="far fa-heart" style="margin-left: 8px;"></i>
                                 <span>{{ $sermon->likes_count ?? 0 }}</span>
                                 إعجاب
+                            </a>
+                        @endauth
+                    </div>
+
+                    <!-- Favorite Button -->
+                    <div>
+                        @auth
+                            @php
+                                $isFavorited = auth()->user()->favorites()
+                                    ->where('favoritable_type', \App\Models\Sermon::class)
+                                    ->where('favoritable_id', $sermon->id)
+                                    ->exists();
+                            @endphp
+                            <button class="btn {{ $isFavorited ? 'btn-warning' : 'btn-outline-warning' }} btn-lg w-100"
+                                    id="favoriteBtn"
+                                    onclick="toggleFavorite()"
+                                    style="width: 100%; padding: 15px; font-size: 1.1rem; border-radius: 8px; border: 2px solid #ffc107; background: {{ $isFavorited ? '#ffc107' : 'white' }}; color: {{ $isFavorited ? 'white' : '#ffc107' }}; cursor: pointer; transition: all 0.3s;">
+                                <i class="{{ $isFavorited ? 'fas' : 'far' }} fa-bookmark" id="favoriteIcon" style="margin-left: 8px;"></i>
+                                {{ $isFavorited ? 'محفوظة' : 'حفظ' }}
+                            </button>
+                        @else
+                            <a href="{{ route('login') }}"
+                               style="display: block; width: 100%; padding: 15px; font-size: 1.1rem; border-radius: 8px; border: 2px solid #ffc107; background: white; color: #ffc107; text-align: center; text-decoration: none; cursor: pointer; transition: all 0.3s;">
+                                <i class="far fa-bookmark" style="margin-left: 8px;"></i>
+                                حفظ
                             </a>
                         @endauth
                     </div>
@@ -423,6 +448,46 @@ use App\Models\Rating;
             .catch(error => {
                 console.error('Error:', error);
                 alert('حدث خطأ أثناء الإعجاب. حاول مرة أخرى.');
+            });
+        }
+
+        // Favorite functionality
+        function toggleFavorite() {
+            const favoriteBtn = document.getElementById('favoriteBtn');
+            const favoriteIcon = document.getElementById('favoriteIcon');
+
+            fetch('{{ route("favorites.toggle") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    favoritable_type: '{{ \App\Models\Sermon::class }}',
+                    favoritable_id: {{ $sermon->id }}
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    if (data.is_favorited) {
+                        favoriteIcon.classList.remove('far');
+                        favoriteIcon.classList.add('fas');
+                        favoriteBtn.style.background = '#ffc107';
+                        favoriteBtn.style.color = 'white';
+                        favoriteBtn.innerHTML = '<i class="fas fa-bookmark" style="margin-left: 8px;"></i> محفوظة';
+                    } else {
+                        favoriteIcon.classList.remove('fas');
+                        favoriteIcon.classList.add('far');
+                        favoriteBtn.style.background = 'white';
+                        favoriteBtn.style.color = '#ffc107';
+                        favoriteBtn.innerHTML = '<i class="far fa-bookmark" style="margin-left: 8px;"></i> حفظ';
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('حدث خطأ أثناء الحفظ. حاول مرة أخرى.');
             });
         }
 

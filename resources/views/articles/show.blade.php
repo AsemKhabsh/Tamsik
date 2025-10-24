@@ -174,6 +174,27 @@ use App\Models\Rating;
                                         إعجاب
                                     </a>
                                 @endauth
+
+                                <!-- Favorite Button -->
+                                @auth
+                                    @php
+                                        $isFavorited = auth()->user()->favorites()
+                                            ->where('favoritable_type', \App\Models\Article::class)
+                                            ->where('favoritable_id', $article->id)
+                                            ->exists();
+                                    @endphp
+                                    <button class="btn {{ $isFavorited ? 'btn-warning' : 'btn-outline-warning' }} btn-lg"
+                                            id="favoriteBtn"
+                                            onclick="toggleFavorite()">
+                                        <i class="{{ $isFavorited ? 'fas' : 'far' }} fa-bookmark me-2" id="favoriteIcon"></i>
+                                        {{ $isFavorited ? 'محفوظة' : 'حفظ' }}
+                                    </button>
+                                @else
+                                    <a href="{{ route('login') }}" class="btn btn-outline-warning btn-lg">
+                                        <i class="far fa-bookmark me-2"></i>
+                                        حفظ
+                                    </a>
+                                @endauth
                             </div>
                         </div>
 
@@ -419,6 +440,46 @@ use App\Models\Rating;
         .catch(error => {
             console.error('Error:', error);
             alert('حدث خطأ أثناء الإعجاب. حاول مرة أخرى.');
+        });
+    }
+
+    // Favorite functionality
+    function toggleFavorite() {
+        const favoriteBtn = document.getElementById('favoriteBtn');
+        const favoriteIcon = document.getElementById('favoriteIcon');
+
+        fetch('{{ route("favorites.toggle") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({
+                favoritable_type: '{{ \App\Models\Article::class }}',
+                favoritable_id: {{ $article->id }}
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                if (data.is_favorited) {
+                    favoriteIcon.classList.remove('far');
+                    favoriteIcon.classList.add('fas');
+                    favoriteBtn.classList.remove('btn-outline-warning');
+                    favoriteBtn.classList.add('btn-warning');
+                    favoriteBtn.innerHTML = '<i class="fas fa-bookmark me-2"></i> محفوظة';
+                } else {
+                    favoriteIcon.classList.remove('fas');
+                    favoriteIcon.classList.add('far');
+                    favoriteBtn.classList.remove('btn-warning');
+                    favoriteBtn.classList.add('btn-outline-warning');
+                    favoriteBtn.innerHTML = '<i class="far fa-bookmark me-2"></i> حفظ';
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('حدث خطأ أثناء الحفظ. حاول مرة أخرى.');
         });
     }
 

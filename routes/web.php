@@ -274,15 +274,20 @@ Route::get('/about', [PageController::class, 'about'])->name('about');
 Route::get('/contact', [PageController::class, 'contact'])->name('contact');
 Route::post('/contact', [PageController::class, 'contactSubmit'])->name('contact.submit');
 
-// Routes إضافية مفقودة
+// مسارات الملف الشخصي والمفضلات
 Route::middleware('auth')->group(function () {
-    Route::get('/profile', function() {
-        return view('profile.index');
-    })->name('profile');
+    // الملف الشخصي
+    Route::get('/profile', [\App\Http\Controllers\ProfileController::class, 'index'])->name('profile');
+    Route::post('/profile/update', [\App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
+    Route::post('/profile/change-password', [\App\Http\Controllers\ProfileController::class, 'changePassword'])->name('profile.change-password');
+    Route::delete('/profile/avatar', [\App\Http\Controllers\ProfileController::class, 'deleteAvatar'])->name('profile.delete-avatar');
 
-    Route::get('/favorites', function() {
-        return view('favorites.index');
-    })->name('favorites');
+    // المفضلات
+    Route::get('/favorites', [\App\Http\Controllers\FavoriteController::class, 'index'])->name('favorites');
+    Route::post('/favorites/toggle', [\App\Http\Controllers\FavoriteController::class, 'toggle'])->name('favorites.toggle');
+    Route::post('/favorites/store', [\App\Http\Controllers\FavoriteController::class, 'store'])->name('favorites.store');
+    Route::delete('/favorites/destroy', [\App\Http\Controllers\FavoriteController::class, 'destroy'])->name('favorites.destroy');
+    Route::delete('/favorites/clear', [\App\Http\Controllers\FavoriteController::class, 'clear'])->name('favorites.clear');
 });
 
 // مسارات الفتاوى العامة (للزوار)
