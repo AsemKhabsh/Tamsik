@@ -20,27 +20,29 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 
-// مسار مؤقت للتحقق من بيانات المستخدم
-Route::get('/debug-user', function() {
-    if (auth()->check()) {
-        $user = auth()->user();
-        return response()->json([
-            'logged_in' => true,
-            'id' => $user->id,
-            'name' => $user->name,
-            'email' => $user->email,
-            'user_type' => $user->user_type,
-            'role' => $user->role,
-            'is_active' => $user->is_active,
-            'allowed_to_add_articles' => in_array($user->user_type, ['admin', 'scholar', 'thinker', 'data_entry']),
-        ]);
-    } else {
-        return response()->json([
-            'logged_in' => false,
-            'message' => 'المستخدم غير مسجل دخول'
-        ]);
-    }
-});
+// مسار مؤقت للتحقق من بيانات المستخدم (للتطوير فقط)
+if (app()->environment('local')) {
+    Route::get('/debug-user', function() {
+        if (auth()->check()) {
+            $user = auth()->user();
+            return response()->json([
+                'logged_in' => true,
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'user_type' => $user->user_type,
+                'role' => $user->role,
+                'is_active' => $user->is_active,
+                'allowed_to_add_articles' => in_array($user->user_type, ['admin', 'scholar', 'thinker', 'data_entry']),
+            ]);
+        } else {
+            return response()->json([
+                'logged_in' => false,
+                'message' => 'المستخدم غير مسجل دخول'
+            ]);
+        }
+    });
+}
 
 /*
 |--------------------------------------------------------------------------
@@ -140,27 +142,28 @@ Route::post('/logout', function(Request $request) {
     return redirect('/');
 })->name('logout');
 
-// Route مؤقت لتسجيل الدخول السريع كمدير (للتطوير فقط - يجب حذفه في الإنتاج)
-Route::get('/quick-admin-login', function(Request $request) {
-    $admin = User::where('email', 'admin@tamsik.com')->first();
-    if ($admin) {
-        Auth::login($admin, true); // remember = true
-        $request->session()->regenerate();
-        return redirect('/admin')->with('success', 'تم تسجيل الدخول كمدير');
-    }
-    return redirect('/login')->with('error', 'لم يتم العثور على حساب المدير');
-});
+// Routes مؤقتة لتسجيل الدخول السريع (للتطوير المحلي فقط)
+if (app()->environment('local')) {
+    Route::get('/quick-admin-login', function(Request $request) {
+        $admin = User::where('email', 'admin@tamsik.com')->first();
+        if ($admin) {
+            Auth::login($admin, true); // remember = true
+            $request->session()->regenerate();
+            return redirect('/admin')->with('success', 'تم تسجيل الدخول كمدير');
+        }
+        return redirect('/login')->with('error', 'لم يتم العثور على حساب المدير');
+    });
 
-// Route مؤقت لتسجيل الدخول السريع كخطيب (للتطوير فقط - يجب حذفه في الإنتاج)
-Route::get('/quick-preacher-login', function(Request $request) {
-    $preacher = User::where('email', 'preacher@tamsik.com')->first();
-    if ($preacher) {
-        Auth::login($preacher, true); // remember = true
-        $request->session()->regenerate();
-        return redirect('/sermons/prepare')->with('success', 'تم تسجيل الدخول كخطيب');
-    }
-    return redirect('/login')->with('error', 'لم يتم العثور على حساب الخطيب');
-});
+    Route::get('/quick-preacher-login', function(Request $request) {
+        $preacher = User::where('email', 'preacher@tamsik.com')->first();
+        if ($preacher) {
+            Auth::login($preacher, true); // remember = true
+            $request->session()->regenerate();
+            return redirect('/sermons/prepare')->with('success', 'تم تسجيل الدخول كخطيب');
+        }
+        return redirect('/login')->with('error', 'لم يتم العثور على حساب الخطيب');
+    });
+}
 
 // مسار اختبار تحسينات UI/UX
 Route::get('/test-ui', function () {
@@ -296,17 +299,19 @@ Route::get('/articles', function() {
     return view('coming-soon', ['title' => 'المقالات']);
 })->name('articles.index');
 
-// مسار تجريبي لصفحة إعداد الخطبة (للاختبار فقط - يجب حذفه في الإنتاج)
-Route::get('/test-sermon-prepare', function() {
-    $categories = [
-        'عقيدة' => 'العقيدة',
-        'عبادات' => 'العبادات',
-        'معاملات' => 'المعاملات',
-        'أخلاق' => 'الأخلاق والآداب',
-        'سيرة' => 'السيرة النبوية',
-        'تربية' => 'التربية والدعوة',
-        'أسرة' => 'الأسرة والمجتمع',
-        'معاصرة' => 'قضايا معاصرة',
-    ];
-    return view('sermons.prepare', compact('categories'));
-})->name('test.sermon.prepare');
+// مسار تجريبي لصفحة إعداد الخطبة (للتطوير المحلي فقط)
+if (app()->environment('local')) {
+    Route::get('/test-sermon-prepare', function() {
+        $categories = [
+            'عقيدة' => 'العقيدة',
+            'عبادات' => 'العبادات',
+            'معاملات' => 'المعاملات',
+            'أخلاق' => 'الأخلاق والآداب',
+            'سيرة' => 'السيرة النبوية',
+            'تربية' => 'التربية والدعوة',
+            'أسرة' => 'الأسرة والمجتمع',
+            'معاصرة' => 'قضايا معاصرة',
+        ];
+        return view('sermons.prepare', compact('categories'));
+    })->name('test.sermon.prepare');
+}

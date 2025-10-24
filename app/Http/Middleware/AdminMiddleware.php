@@ -20,8 +20,17 @@ class AdminMiddleware
             return redirect()->route('login');
         }
 
+        $user = auth()->user();
+
+        // التحقق من أن الحساب نشط
+        if (!$user->is_active) {
+            auth()->logout();
+            return redirect()->route('login')
+                ->with('error', 'حسابك غير نشط. يرجى التواصل مع الإدارة.');
+        }
+
         // التحقق من دور المدير
-        if (auth()->user()->role !== 'admin') {
+        if ($user->role !== 'admin') {
             abort(403, 'غير مصرح لك بالوصول إلى هذه الصفحة');
         }
 

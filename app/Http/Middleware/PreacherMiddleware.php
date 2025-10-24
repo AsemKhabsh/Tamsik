@@ -25,6 +25,13 @@ class PreacherMiddleware
 
         $user = Auth::user();
 
+        // التحقق من أن الحساب نشط
+        if (!$user->is_active) {
+            Auth::logout();
+            return redirect()->route('login')
+                ->with('error', 'حسابك غير نشط. يرجى التواصل مع الإدارة.');
+        }
+
         // التحقق من أن المستخدم خطيب أو عالم أو مفكر أو مدخل بيانات
         if (!in_array($user->user_type, ['preacher', 'scholar', 'thinker', 'data_entry', 'admin'])) {
             return response()->view('errors.403', [
