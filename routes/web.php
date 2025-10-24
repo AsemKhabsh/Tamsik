@@ -66,9 +66,13 @@ Route::post('/sermons', [SermonController::class, 'store'])->name('sermons.store
 Route::get('/sermons/{id}', [SermonController::class, 'show'])->name('sermons.show');
 Route::get('/sermons/{id}/download', [SermonController::class, 'download'])->name('sermons.download');
 
-// Search routes
-Route::get('/search', [App\Http\Controllers\SearchController::class, 'index'])->name('search.index');
-Route::get('/search/quick', [App\Http\Controllers\SearchController::class, 'quick'])->name('search.quick');
+// Search routes (with rate limiting to prevent abuse)
+Route::get('/search', [App\Http\Controllers\SearchController::class, 'index'])
+    ->name('search.index')
+    ->middleware('throttle:60,1'); // 60 requests per minute
+Route::get('/search/quick', [App\Http\Controllers\SearchController::class, 'quick'])
+    ->name('search.quick')
+    ->middleware('throttle:60,1'); // 60 requests per minute
 
 // Auth routes
 Route::get('/login', function() {
