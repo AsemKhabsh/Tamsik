@@ -1,3 +1,7 @@
+@php
+use App\Models\Rating;
+@endphp
+
 @extends('layouts.app')
 
 @section('title', $article->meta_title ?? $article->title . ' - تمسيك')
@@ -142,23 +146,67 @@
                     </div>
                 </div>
 
-                <!-- Like Button -->
+                <!-- Back Button & Like Button -->
                 <div class="article-actions mb-4">
-                    @auth
-                        <button class="btn {{ $article->isLikedBy(auth()->user()) ? 'btn-danger' : 'btn-outline-danger' }} btn-lg"
-                                id="likeBtn"
-                                onclick="toggleLike()">
-                            <i class="{{ $article->isLikedBy(auth()->user()) ? 'fas' : 'far' }} fa-heart me-2" id="likeIcon"></i>
-                            <span id="likeCount">{{ $article->likes_count ?? 0 }}</span>
-                            إعجاب
-                        </button>
-                    @else
-                        <a href="{{ route('login') }}" class="btn btn-outline-danger btn-lg">
-                            <i class="far fa-heart me-2"></i>
-                            <span>{{ $article->likes_count ?? 0 }}</span>
-                            إعجاب
-                        </a>
-                    @endauth
+                    <div class="row g-3">
+                        <!-- Back Button & Like Button -->
+                        <div class="col-md-8">
+                            <div class="d-flex gap-2 flex-wrap">
+                                <!-- Back Button -->
+                                <button onclick="window.history.back()" class="btn btn-outline-secondary btn-lg">
+                                    <i class="fas fa-arrow-right me-2"></i>
+                                    رجوع
+                                </button>
+
+                                <!-- Like Button -->
+                                @auth
+                                    <button class="btn {{ $article->isLikedBy(auth()->user()) ? 'btn-danger' : 'btn-outline-danger' }} btn-lg"
+                                            id="likeBtn"
+                                            onclick="toggleLike()">
+                                        <i class="{{ $article->isLikedBy(auth()->user()) ? 'fas' : 'far' }} fa-heart me-2" id="likeIcon"></i>
+                                        <span id="likeCount">{{ $article->likes_count ?? 0 }}</span>
+                                        إعجاب
+                                    </button>
+                                @else
+                                    <a href="{{ route('login') }}" class="btn btn-outline-danger btn-lg">
+                                        <i class="far fa-heart me-2"></i>
+                                        <span>{{ $article->likes_count ?? 0 }}</span>
+                                        إعجاب
+                                    </a>
+                                @endauth
+                            </div>
+                        </div>
+
+                        <!-- Rating Display -->
+                        <div class="col-md-4">
+                            <div class="bg-light p-3 rounded text-center h-100">
+                                @php
+                                    $avgRating = $article->getAverageRating();
+                                    $ratingsCount = $article->getRatingsCount();
+                                @endphp
+                                <div class="mb-2">
+                                    @for($i = 1; $i <= 5; $i++)
+                                        <i class="fas fa-star" style="color: {{ $i <= round($avgRating) ? '#ffc107' : '#dee2e6' }}; font-size: 1.2rem;"></i>
+                                    @endfor
+                                </div>
+                                <div class="mb-2">
+                                    <strong id="avgRating" style="font-size: 1.2rem;">{{ number_format($avgRating, 1) }}</strong>
+                                    <small class="text-muted">(<span id="ratingsCount">{{ $ratingsCount }}</span> تقييم)</small>
+                                </div>
+                                @auth
+                                    <button onclick="openRatingModal()" class="btn btn-success btn-sm">
+                                        <i class="fas fa-star me-1"></i>
+                                        قيّم المقال
+                                    </button>
+                                @else
+                                    <a href="{{ route('login') }}" class="btn btn-success btn-sm">
+                                        <i class="fas fa-star me-1"></i>
+                                        قيّم المقال
+                                    </a>
+                                @endauth
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Comments Section -->
@@ -343,7 +391,7 @@
         const likeCount = document.getElementById('likeCount');
 
         // إرسال طلب AJAX
-        fetch('{{ route("articles.like.toggle", $article->id) }}', {
+        fetch('{{ route("like.toggle", ["type" => "articles", "id" => $article->id]) }}', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -380,7 +428,93 @@
             alert('تم نسخ الرابط بنجاح!');
         });
     }
+
+    // Rating functionality
+    let selectedRating = 0;
+
+    function openRatingModal() {
+        document.getElementById('ratingModal').style.display = 'flex';
+    }
+
+    function closeRatingModal() {
+        document.getElementById('ratingModal').style.display = 'none';
+        selectedRating = 0;
+        document.querySelectorAll('.rating-star').forEach(star => {
+            star.style.color = '#dee2e6';
+        });
+        document.getElementById('review').value = '';
+    }
+
+    function selectRating(rating) {
+        selectedRating = rating;
+        document.querySelectorAll('.rating-star').forEach((star, index) => {
+            if (index < rating) {
+                star.style.color = '#ffc107';
+            } else {
+                star.style.color = '#dee2e6';
+            }
+        });
+    }
+
+    function submitRating() {
+        if (selectedRating === 0) {
+            alert('الرجاء اختيار تقييم');
+            return;
+        }
+
+        const review = document.getElementById('review').value;
+
+        fetch('{{ route("rating.store", ["type" => "articles", "id" => $article->id]) }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({
+                rating: selectedRating,
+                review: review
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                document.getElementById('avgRating').textContent = data.average_rating;
+                document.getElementById('ratingsCount').textContent = data.ratings_count;
+                closeRatingModal();
+            } else {
+                alert(data.message || 'حدث خطأ أثناء إرسال التقييم');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('حدث خطأ أثناء إرسال التقييم');
+        });
+    }
 </script>
 @endpush
+
+<!-- Rating Modal -->
+@auth
+<div id="ratingModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center;">
+    <div style="background: white; padding: 30px; border-radius: 10px; max-width: 500px; width: 90%;">
+        <h3 style="margin-bottom: 20px; text-align: center;">قيّم المقال</h3>
+        <div style="text-align: center; margin-bottom: 20px;">
+            @for($i = 1; $i <= 5; $i++)
+                <i class="fas fa-star rating-star" onclick="selectRating({{ $i }})" style="font-size: 2rem; color: #dee2e6; cursor: pointer; margin: 0 5px;"></i>
+            @endfor
+        </div>
+        <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 10px; font-weight: bold;">تعليقك (اختياري):</label>
+            <textarea id="review" rows="3" maxlength="1000" class="form-control" style="font-family: 'Amiri', serif;"></textarea>
+        </div>
+        <div style="display: flex; gap: 10px; justify-content: flex-end;">
+            <button onclick="closeRatingModal()" class="btn btn-secondary">إلغاء</button>
+            <button onclick="submitRating()" class="btn btn-success">إرسال التقييم</button>
+        </div>
+    </div>
+</div>
+@endauth
+
 @endsection
 

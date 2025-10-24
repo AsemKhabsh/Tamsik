@@ -1,8 +1,12 @@
+@php
+use App\Models\Rating;
+@endphp
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $lecture->title }} - تمسك</title>
     
     <!-- CSS Files -->
@@ -233,34 +237,243 @@
                     <p style="margin: 0; color: #856404;">{{ $lecture->location }}</p>
                 </div>
             @endif
+
+            <!-- Like and Rating Section -->
+            <div class="lecture-actions" style="margin-top: 30px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <!-- Like Button -->
+                    <div>
+                        @auth
+                            <button class="btn {{ $lecture->isLikedBy(auth()->user()) ? 'btn-danger' : 'btn-outline-danger' }} btn-lg w-100"
+                                    id="likeBtn"
+                                    onclick="toggleLike()"
+                                    style="width: 100%; padding: 15px; font-size: 1.1rem; border-radius: 8px; border: 2px solid #dc3545; background: {{ $lecture->isLikedBy(auth()->user()) ? '#dc3545' : 'white' }}; color: {{ $lecture->isLikedBy(auth()->user()) ? 'white' : '#dc3545' }}; cursor: pointer; transition: all 0.3s;">
+                                <i class="{{ $lecture->isLikedBy(auth()->user()) ? 'fas' : 'far' }} fa-heart" id="likeIcon" style="margin-left: 8px;"></i>
+                                <span id="likeCount">{{ $lecture->likes_count ?? 0 }}</span>
+                                إعجاب
+                            </button>
+                        @else
+                            <a href="{{ route('login') }}"
+                               style="display: block; width: 100%; padding: 15px; font-size: 1.1rem; border-radius: 8px; border: 2px solid #dc3545; background: white; color: #dc3545; text-align: center; text-decoration: none; cursor: pointer; transition: all 0.3s;">
+                                <i class="far fa-heart" style="margin-left: 8px;"></i>
+                                <span>{{ $lecture->likes_count ?? 0 }}</span>
+                                إعجاب
+                            </a>
+                        @endauth
+                    </div>
+
+                    <!-- Rating Display -->
+                    <div>
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; text-align: center; height: 100%;">
+                            @php
+                                $avgRating = $lecture->getAverageRating();
+                                $ratingsCount = $lecture->getRatingsCount();
+                            @endphp
+                            <div style="margin-bottom: 10px;">
+                                @for($i = 1; $i <= 5; $i++)
+                                    <i class="fas fa-star" style="color: {{ $i <= round($avgRating) ? '#ffc107' : '#dee2e6' }}; font-size: 1.5rem;"></i>
+                                @endfor
+                            </div>
+                            <div style="margin-bottom: 10px;">
+                                <strong id="avgRating" style="font-size: 1.3rem;">{{ number_format($avgRating, 1) }}</strong>
+                                <small style="color: #6c757d;">(<span id="ratingsCount">{{ $ratingsCount }}</span> تقييم)</small>
+                            </div>
+                            @auth
+                                <button onclick="openRatingModal()"
+                                        style="padding: 8px 20px; background: #1d8a4e; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 0.95rem;">
+                                    <i class="fas fa-star" style="margin-left: 5px;"></i>
+                                    قيّم المحاضرة
+                                </button>
+                            @else
+                                <a href="{{ route('login') }}"
+                                   style="display: inline-block; padding: 8px 20px; background: #1d8a4e; color: white; border-radius: 5px; text-decoration: none; font-size: 0.95rem;">
+                                    <i class="fas fa-star" style="margin-left: 5px;"></i>
+                                    قيّم المحاضرة
+                                </a>
+                            @endauth
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
+
+    <!-- Rating Modal -->
+    @auth
+    <div id="ratingModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; align-items: center; justify-content: center;">
+        <div style="background: white; padding: 30px; border-radius: 10px; max-width: 500px; width: 90%;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="margin: 0; color: #1d8a4e;">تقييم المحاضرة</h3>
+                <button onclick="closeRatingModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #999;">&times;</button>
+            </div>
+            <div style="margin-bottom: 20px; text-align: center;">
+                <label style="display: block; margin-bottom: 10px; font-weight: bold;">اختر التقييم:</label>
+                <div id="ratingStars" style="font-size: 2.5rem;">
+                    <i class="far fa-star" data-rating="1" style="cursor: pointer; margin: 0 5px; transition: all 0.2s;"></i>
+                    <i class="far fa-star" data-rating="2" style="cursor: pointer; margin: 0 5px; transition: all 0.2s;"></i>
+                    <i class="far fa-star" data-rating="3" style="cursor: pointer; margin: 0 5px; transition: all 0.2s;"></i>
+                    <i class="far fa-star" data-rating="4" style="cursor: pointer; margin: 0 5px; transition: all 0.2s;"></i>
+                    <i class="far fa-star" data-rating="5" style="cursor: pointer; margin: 0 5px; transition: all 0.2s;"></i>
+                </div>
+                <input type="hidden" id="ratingValue">
+            </div>
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 10px; font-weight: bold;">تعليقك (اختياري):</label>
+                <textarea id="review" rows="3" maxlength="1000" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-family: 'Amiri', serif;"></textarea>
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button onclick="closeRatingModal()" style="padding: 10px 20px; background: #6c757d; color: white; border: none; border-radius: 5px; cursor: pointer;">إلغاء</button>
+                <button onclick="submitRating()" style="padding: 10px 20px; background: #1d8a4e; color: white; border: none; border-radius: 5px; cursor: pointer;">إرسال التقييم</button>
+            </div>
+        </div>
+    </div>
+    @endauth
     
-    @if($lecture->status == 'scheduled' && $lecture->scheduled_at->isFuture())
-        <script>
+    <script>
+        // Like functionality
+        function toggleLike() {
+            const likeBtn = document.getElementById('likeBtn');
+            const likeIcon = document.getElementById('likeIcon');
+            const likeCount = document.getElementById('likeCount');
+
+            fetch('{{ route("like.toggle", ["type" => "lectures", "id" => $lecture->id]) }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    if (data.is_liked) {
+                        likeIcon.classList.remove('far');
+                        likeIcon.classList.add('fas');
+                        likeBtn.style.background = '#dc3545';
+                        likeBtn.style.color = 'white';
+                    } else {
+                        likeIcon.classList.remove('fas');
+                        likeIcon.classList.add('far');
+                        likeBtn.style.background = 'white';
+                        likeBtn.style.color = '#dc3545';
+                    }
+                    likeCount.textContent = data.likes_count;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('حدث خطأ أثناء الإعجاب. حاول مرة أخرى.');
+            });
+        }
+
+        // Rating functionality
+        let selectedRating = 0;
+
+        function openRatingModal() {
+            document.getElementById('ratingModal').style.display = 'flex';
+        }
+
+        function closeRatingModal() {
+            document.getElementById('ratingModal').style.display = 'none';
+            selectedRating = 0;
+            document.getElementById('review').value = '';
+            updateStars(0);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const stars = document.querySelectorAll('#ratingStars i');
+            stars.forEach(star => {
+                star.addEventListener('click', function() {
+                    selectedRating = parseInt(this.dataset.rating);
+                    document.getElementById('ratingValue').value = selectedRating;
+                    updateStars(selectedRating);
+                });
+
+                star.addEventListener('mouseenter', function() {
+                    updateStars(parseInt(this.dataset.rating));
+                });
+            });
+
+            document.getElementById('ratingStars').addEventListener('mouseleave', function() {
+                updateStars(selectedRating);
+            });
+        });
+
+        function updateStars(rating) {
+            const stars = document.querySelectorAll('#ratingStars i');
+            stars.forEach((star, index) => {
+                if (index < rating) {
+                    star.classList.remove('far');
+                    star.classList.add('fas');
+                    star.style.color = '#ffc107';
+                } else {
+                    star.classList.remove('fas');
+                    star.classList.add('far');
+                    star.style.color = '#dee2e6';
+                }
+            });
+        }
+
+        function submitRating() {
+            if (selectedRating === 0) {
+                alert('الرجاء اختيار تقييم');
+                return;
+            }
+
+            const review = document.getElementById('review').value;
+
+            fetch('{{ route("rating.store", ["type" => "lectures", "id" => $lecture->id]) }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({
+                    rating: selectedRating,
+                    review: review
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    document.getElementById('avgRating').textContent = data.average_rating;
+                    document.getElementById('ratingsCount').textContent = data.ratings_count;
+                    closeRatingModal();
+                } else {
+                    alert(data.message || 'حدث خطأ أثناء إرسال التقييم');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('حدث خطأ أثناء إرسال التقييم');
+            });
+        }
+
+        @if($lecture->status == 'scheduled' && $lecture->scheduled_at->isFuture())
             // العد التنازلي للمحاضرة
             function updateCountdown() {
                 const lectureDate = new Date('{{ $lecture->scheduled_at->toISOString() }}').getTime();
                 const now = new Date().getTime();
                 const distance = lectureDate - now;
-                
+
                 if (distance > 0) {
                     const days = Math.floor(distance / (1000 * 60 * 60 * 24));
                     const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                     const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
                     const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-                    
-                    document.getElementById('countdown').innerHTML = 
+
+                    document.getElementById('countdown').innerHTML =
                         days + " يوم " + hours + " ساعة " + minutes + " دقيقة " + seconds + " ثانية";
                 } else {
                     document.getElementById('countdown').innerHTML = "بدأت المحاضرة!";
                 }
             }
-            
+
             // تحديث العد التنازلي كل ثانية
             setInterval(updateCountdown, 1000);
             updateCountdown(); // تشغيل فوري
-        </script>
-    @endif
+        @endif
+    </script>
 </body>
 </html>

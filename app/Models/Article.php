@@ -5,6 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\Rating;
+use App\Models\Like;
+use App\Models\Favorite;
 
 class Article extends Model
 {
@@ -64,6 +67,11 @@ class Article extends Model
     public function favorites()
     {
         return $this->hasMany(Favorite::class);
+    }
+
+    public function ratings()
+    {
+        return $this->morphMany(Rating::class, 'ratable');
     }
 
     // النطاقات (Scopes)
@@ -173,7 +181,7 @@ class Article extends Model
     public function toggleFavorite(User $user)
     {
         $favorite = $this->favorites()->where('user_id', $user->id)->first();
-        
+
         if ($favorite) {
             $favorite->delete();
             return false;
@@ -181,6 +189,18 @@ class Article extends Model
             $this->favorites()->create(['user_id' => $user->id]);
             return true;
         }
+    }
+
+    // الحصول على متوسط التقييم
+    public function getAverageRating()
+    {
+        return $this->ratings()->avg('rating') ?? 0;
+    }
+
+    // الحصول على عدد التقييمات
+    public function getRatingsCount()
+    {
+        return $this->ratings()->count();
     }
 
     // Boot method

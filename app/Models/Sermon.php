@@ -5,6 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\Rating;
+use App\Models\Like;
+use App\Models\Favorite;
 
 class Sermon extends Model
 {
@@ -28,6 +31,7 @@ class Sermon extends Model
         'status',
         'views_count',
         'downloads_count',
+        'likes_count',
         'image',
         'audio_file',
         'video_file',
@@ -44,6 +48,7 @@ class Sermon extends Model
         'is_featured' => 'boolean',
         'views_count' => 'integer',
         'downloads_count' => 'integer',
+        'likes_count' => 'integer',
         'tags' => 'array',
         'references' => 'array',
         'metadata' => 'array',
@@ -78,13 +83,19 @@ class Sermon extends Model
     // التقييمات
     public function ratings()
     {
-        return $this->hasMany(Rating::class);
+        return $this->morphMany(Rating::class, 'ratable');
     }
 
     // المفضلات
     public function favorites()
     {
-        return $this->hasMany(Favorite::class);
+        return $this->morphMany(Favorite::class, 'favoritable');
+    }
+
+    // الإعجابات
+    public function likes()
+    {
+        return $this->morphMany(Like::class, 'likeable');
     }
 
     /**
@@ -177,5 +188,47 @@ class Sermon extends Model
         $wordCount = str_word_count(strip_tags($this->content));
         $minutes = ceil($wordCount / 200); // متوسط 200 كلمة في الدقيقة
         return $minutes . ' دقيقة';
+    }
+
+    // التحقق من إعجاب المستخدم
+    public function isLikedBy(User $user)
+    {
+        return $this->likes()->where('user_id', $user->id)->exists();
+    }
+
+    // تبديل الإعجاب
+    public function toggleLike(User $user)
+    {
+        $like = $this->likes()->where('user_id', $user->id)->first();
+
+        if ($like) {
+            $like->delete();
+            $this->decrement('likes_count');
+            return false;
+        } else {
+            $this->likes()->create(['user_id' => $user->id]);
+            $this->increment('likes_count');
+            return true;
+        }
+    }
+
+    // التحقق من إضافة للمفضلة
+    public function isFavoritedBy(User $user)
+    {
+        return $this->favorites()->where('user_id', $user->id)->exists();
+    }
+
+    // تبديل المفضلة
+    public function toggleFavorite(User $user)
+    {
+        $favorite = $this->favorites()->where('user_id', $user->id)->first();
+
+        if ($favorite) {
+            $favorite->delete();
+            return false;
+        } else {
+            $this->favorites()->create(['user_id' => $user->id]);
+            return true;
+        }
     }
 }

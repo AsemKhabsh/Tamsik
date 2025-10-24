@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\Like;
+use App\Models\Favorite;
 
 class Fatwa extends Model
 {
@@ -21,6 +23,7 @@ class Fatwa extends Model
         'is_published',
         'is_featured',
         'views_count',
+        'likes_count',
         'priority',
         'references',
         'published_at'
@@ -30,6 +33,8 @@ class Fatwa extends Model
         'published_at' => 'datetime',
         'is_published' => 'boolean',
         'is_featured' => 'boolean',
+        'views_count' => 'integer',
+        'likes_count' => 'integer',
         'tags' => 'array',
         'references' => 'array'
     ];
@@ -57,12 +62,12 @@ class Fatwa extends Model
 
     public function likes()
     {
-        return $this->hasMany(Like::class);
+        return $this->morphMany(Like::class, 'likeable');
     }
 
     public function favorites()
     {
-        return $this->hasMany(Favorite::class);
+        return $this->morphMany(Favorite::class, 'favoritable');
     }
 
     // النطاقات (Scopes)

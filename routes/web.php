@@ -13,6 +13,7 @@ use App\Http\Controllers\LectureManagementController;
 use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\LikeController;
+use App\Http\Controllers\RatingController;
 use App\Http\Controllers\AdminController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -180,11 +181,19 @@ Route::get('/thinkers/{id}', [ThinkerController::class, 'show'])->name('thinkers
 // مسارات المقالات العامة (للزوار)
 Route::get('/articles/{id}', [ArticleController::class, 'show'])->name('articles.show');
 
-// مسارات التعليقات والإعجابات (تتطلب تسجيل دخول)
+// مسارات التعليقات والإعجابات والتقييمات (تتطلب تسجيل دخول)
 Route::middleware('auth')->group(function () {
+    // التعليقات
     Route::post('/articles/{article}/comments', [CommentController::class, 'store'])->name('articles.comments.store');
     Route::delete('/comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
-    Route::post('/articles/{article}/like', [LikeController::class, 'toggle'])->name('articles.like.toggle');
+
+    // الإعجابات - نظام موحد لجميع الأنواع
+    Route::post('/{type}/{id}/like', [LikeController::class, 'toggle'])->name('like.toggle');
+
+    // التقييمات - للخطب والمحاضرات
+    Route::post('/{type}/{id}/rating', [RatingController::class, 'store'])->name('rating.store');
+    Route::delete('/{type}/{id}/rating', [RatingController::class, 'destroy'])->name('rating.destroy');
+    Route::get('/{type}/{id}/rating/user', [RatingController::class, 'getUserRating'])->name('rating.user');
 });
 
 // مسارات إعداد الخطب (للخطباء والعلماء فقط)

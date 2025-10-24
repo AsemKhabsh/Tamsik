@@ -75,20 +75,39 @@
                     </div>
                 @endif
 
+                <!-- Like Button -->
+                <div class="fatwa-actions mb-4">
+                    @auth
+                        <button class="btn {{ $fatwa->isLikedBy(auth()->user()) ? 'btn-danger' : 'btn-outline-danger' }} btn-lg"
+                                id="likeBtn"
+                                onclick="toggleLike()">
+                            <i class="{{ $fatwa->isLikedBy(auth()->user()) ? 'fas' : 'far' }} fa-heart me-2" id="likeIcon"></i>
+                            <span id="likeCount">{{ $fatwa->likes_count ?? 0 }}</span>
+                            إعجاب
+                        </button>
+                    @else
+                        <a href="{{ route('login') }}" class="btn btn-outline-danger btn-lg">
+                            <i class="far fa-heart me-2"></i>
+                            <span>{{ $fatwa->likes_count ?? 0 }}</span>
+                            إعجاب
+                        </a>
+                    @endauth
+                </div>
+
                 <!-- Share Buttons -->
                 <div class="share-section mt-4">
                     <h5 class="mb-3">شارك هذه الفتوى:</h5>
                     <div class="share-buttons">
-                        <a href="#" class="btn btn-outline-primary btn-sm">
+                        <a href="#" class="btn btn-outline-primary btn-sm" onclick="shareOnFacebook(); return false;">
                             <i class="fab fa-facebook-f"></i>
                         </a>
-                        <a href="#" class="btn btn-outline-info btn-sm">
+                        <a href="#" class="btn btn-outline-info btn-sm" onclick="shareOnTwitter(); return false;">
                             <i class="fab fa-twitter"></i>
                         </a>
-                        <a href="#" class="btn btn-outline-success btn-sm">
+                        <a href="#" class="btn btn-outline-success btn-sm" onclick="shareOnWhatsApp(); return false;">
                             <i class="fab fa-whatsapp"></i>
                         </a>
-                        <a href="#" class="btn btn-outline-secondary btn-sm">
+                        <a href="#" class="btn btn-outline-secondary btn-sm" onclick="copyLink(); return false;">
                             <i class="fas fa-link"></i>
                         </a>
                     </div>
@@ -303,3 +322,86 @@
 </style>
 @endsection
 
+@push('scripts')
+<script>
+// Like functionality
+function toggleLike() {
+    const likeBtn = document.getElementById('likeBtn');
+    const likeIcon = document.getElementById('likeIcon');
+    const likeCount = document.getElementById('likeCount');
+
+    fetch('{{ route("like.toggle", ["type" => "fatwas", "id" => $fatwa->id]) }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            if (data.is_liked) {
+                likeIcon.classList.remove('far');
+                likeIcon.classList.add('fas');
+                likeBtn.classList.remove('btn-outline-danger');
+                likeBtn.classList.add('btn-danger');
+            } else {
+                likeIcon.classList.remove('fas');
+                likeIcon.classList.add('far');
+                likeBtn.classList.remove('btn-danger');
+                likeBtn.classList.add('btn-outline-danger');
+            }
+            likeCount.textContent = data.likes_count;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('حدث خطأ أثناء الإعجاب. حاول مرة أخرى.', 'error');
+    });
+}
+
+// Share functions
+function shareOnFacebook() {
+    const url = encodeURIComponent(window.location.href);
+    const title = encodeURIComponent('{{ $fatwa->question }}');
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank');
+}
+
+function shareOnTwitter() {
+    const url = encodeURIComponent(window.location.href);
+    const title = encodeURIComponent('{{ $fatwa->question }}');
+    window.open(`https://twitter.com/intent/tweet?url=${url}&text=${title}`, '_blank');
+}
+
+function shareOnWhatsApp() {
+    const url = encodeURIComponent(window.location.href);
+    const title = encodeURIComponent('{{ $fatwa->question }}');
+    window.open(`https://wa.me/?text=${title} ${url}`, '_blank');
+}
+
+function copyLink() {
+    navigator.clipboard.writeText(window.location.href).then(function() {
+        showToast('تم نسخ الرابط بنجاح');
+    }, function() {
+        showToast('فشل في نسخ الرابط', 'error');
+    });
+}
+
+function showToast(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `alert alert-${type === 'error' ? 'danger' : 'success'} position-fixed`;
+    toast.style.cssText = 'top: 20px; left: 20px; z-index: 9999; min-width: 300px;';
+    toast.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>
+    `;
+    document.body.appendChild(toast);
+
+    setTimeout(() => {
+        if (toast.parentElement) {
+            toast.remove();
+        }
+    }, 5000);
+}
+</script>
+@endpush

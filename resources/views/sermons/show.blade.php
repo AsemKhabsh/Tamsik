@@ -159,15 +159,73 @@
                         </div>
                     @endif
 
+                    <!-- Like and Rating Section -->
+                    <div class="sermon-actions mb-4">
+                        <div class="row g-3">
+                            <!-- Like Button -->
+                            <div class="col-md-6">
+                                @auth
+                                    <button class="btn {{ $sermon->isLikedBy(auth()->user()) ? 'btn-danger' : 'btn-outline-danger' }} btn-lg w-100"
+                                            id="likeBtn"
+                                            onclick="toggleLike()">
+                                        <i class="{{ $sermon->isLikedBy(auth()->user()) ? 'fas' : 'far' }} fa-heart me-2" id="likeIcon"></i>
+                                        <span id="likeCount">{{ $sermon->likes_count ?? 0 }}</span>
+                                        إعجاب
+                                    </button>
+                                @else
+                                    <a href="{{ route('login') }}" class="btn btn-outline-danger btn-lg w-100">
+                                        <i class="far fa-heart me-2"></i>
+                                        <span>{{ $sermon->likes_count ?? 0 }}</span>
+                                        إعجاب
+                                    </a>
+                                @endauth
+                            </div>
+
+                            <!-- Rating Display -->
+                            <div class="col-md-6">
+                                <div class="card bg-light h-100">
+                                    <div class="card-body text-center">
+                                        <div class="rating-display mb-2">
+                                            @php
+                                                $avgRating = $sermon->getAverageRating();
+                                                $ratingsCount = $sermon->getRatingsCount();
+                                            @endphp
+                                            <div class="stars mb-1">
+                                                @for($i = 1; $i <= 5; $i++)
+                                                    <i class="fas fa-star {{ $i <= round($avgRating) ? 'text-warning' : 'text-muted' }}"></i>
+                                                @endfor
+                                            </div>
+                                            <div class="rating-text">
+                                                <strong id="avgRating">{{ number_format($avgRating, 1) }}</strong>
+                                                <small class="text-muted">(<span id="ratingsCount">{{ $ratingsCount }}</span> تقييم)</small>
+                                            </div>
+                                        </div>
+                                        @auth
+                                            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#ratingModal">
+                                                <i class="fas fa-star me-1"></i>
+                                                قيّم الخطبة
+                                            </button>
+                                        @else
+                                            <a href="{{ route('login') }}" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-star me-1"></i>
+                                                قيّم الخطبة
+                                            </a>
+                                        @endauth
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Action Buttons -->
                     <div class="d-flex flex-wrap gap-2 mb-4">
                         <a href="{{ route('sermons.download', $sermon->id) }}" class="btn btn-primary">
                             <i class="fas fa-download me-2"></i>
                             تحميل الخطبة
                         </a>
-                        
+
                         @auth
-                            <button type="button" class="btn btn-outline-danger favorite-btn" 
+                            <button type="button" class="btn btn-outline-danger favorite-btn"
                                     data-sermon-id="{{ $sermon->id }}">
                                 <i class="fas fa-heart me-2"></i>
                                 {{ $isFavorited ? 'إزالة من المفضلات' : 'إضافة للمفضلات' }}
@@ -176,7 +234,7 @@
 
                         <!-- Share Buttons -->
                         <div class="btn-group">
-                            <button type="button" class="btn btn-outline-secondary dropdown-toggle" 
+                            <button type="button" class="btn btn-outline-secondary dropdown-toggle"
                                     data-bs-toggle="dropdown">
                                 <i class="fas fa-share me-2"></i>
                                 مشاركة
@@ -312,6 +370,43 @@
         </div>
     </div>
 </div>
+
+<!-- Rating Modal -->
+@auth
+<div class="modal fade" id="ratingModal" tabindex="-1" aria-labelledby="ratingModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="ratingModalLabel">تقييم الخطبة</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="ratingForm">
+                    <div class="mb-3 text-center">
+                        <label class="form-label">اختر التقييم:</label>
+                        <div class="rating-stars" id="ratingStars">
+                            <i class="far fa-star" data-rating="1"></i>
+                            <i class="far fa-star" data-rating="2"></i>
+                            <i class="far fa-star" data-rating="3"></i>
+                            <i class="far fa-star" data-rating="4"></i>
+                            <i class="far fa-star" data-rating="5"></i>
+                        </div>
+                        <input type="hidden" id="ratingValue" name="rating" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="review" class="form-label">تعليقك (اختياري):</label>
+                        <textarea class="form-control" id="review" name="review" rows="3" maxlength="1000"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-primary" onclick="submitRating()">إرسال التقييم</button>
+            </div>
+        </div>
+    </div>
+</div>
+@endauth
 @endsection
 
 @push('styles')
@@ -346,18 +441,86 @@
     padding: 1rem;
     border-radius: 0.25rem;
 }
+
+.rating-stars i {
+    font-size: 2rem;
+    cursor: pointer;
+    margin: 0 0.25rem;
+    transition: all 0.2s;
+}
+
+.rating-stars i:hover {
+    transform: scale(1.2);
+}
 </style>
 @endpush
 
 @push('scripts')
 <script>
-// Favorite functionality
+// Like functionality
+function toggleLike() {
+    const likeBtn = document.getElementById('likeBtn');
+    const likeIcon = document.getElementById('likeIcon');
+    const likeCount = document.getElementById('likeCount');
+
+    fetch('{{ route("like.toggle", ["type" => "sermons", "id" => $sermon->id]) }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            if (data.is_liked) {
+                likeIcon.classList.remove('far');
+                likeIcon.classList.add('fas');
+                likeBtn.classList.remove('btn-outline-danger');
+                likeBtn.classList.add('btn-danger');
+            } else {
+                likeIcon.classList.remove('fas');
+                likeIcon.classList.add('far');
+                likeBtn.classList.remove('btn-danger');
+                likeBtn.classList.add('btn-outline-danger');
+            }
+            likeCount.textContent = data.likes_count;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('حدث خطأ أثناء الإعجاب. حاول مرة أخرى.', 'error');
+    });
+}
+
+// Rating functionality
+let selectedRating = 0;
+
 document.addEventListener('DOMContentLoaded', function() {
+    // Rating stars interaction
+    const stars = document.querySelectorAll('#ratingStars i');
+    stars.forEach(star => {
+        star.addEventListener('click', function() {
+            selectedRating = parseInt(this.dataset.rating);
+            document.getElementById('ratingValue').value = selectedRating;
+            updateStars(selectedRating);
+        });
+
+        star.addEventListener('mouseenter', function() {
+            updateStars(parseInt(this.dataset.rating));
+        });
+    });
+
+    document.getElementById('ratingStars').addEventListener('mouseleave', function() {
+        updateStars(selectedRating);
+    });
+
+    // Favorite functionality
     const favoriteBtn = document.querySelector('.favorite-btn');
     if (favoriteBtn) {
         favoriteBtn.addEventListener('click', function() {
             const sermonId = this.dataset.sermonId;
-            
+
             fetch(`/sermons/${sermonId}/favorite`, {
                 method: 'POST',
                 headers: {
@@ -369,7 +532,7 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(data => {
                 const icon = this.querySelector('i');
                 const text = this.querySelector('span') || this.childNodes[2];
-                
+
                 if (data.status === 'added') {
                     this.innerHTML = '<i class="fas fa-heart me-2"></i>إزالة من المفضلات';
                     this.classList.remove('btn-outline-danger');
@@ -379,7 +542,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     this.classList.remove('btn-danger');
                     this.classList.add('btn-outline-danger');
                 }
-                
+
                 showToast(data.message);
             })
             .catch(error => {
@@ -389,6 +552,63 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+function updateStars(rating) {
+    const stars = document.querySelectorAll('#ratingStars i');
+    stars.forEach((star, index) => {
+        if (index < rating) {
+            star.classList.remove('far');
+            star.classList.add('fas', 'text-warning');
+        } else {
+            star.classList.remove('fas', 'text-warning');
+            star.classList.add('far');
+        }
+    });
+}
+
+function submitRating() {
+    if (selectedRating === 0) {
+        showToast('الرجاء اختيار تقييم', 'error');
+        return;
+    }
+
+    const review = document.getElementById('review').value;
+
+    fetch('{{ route("rating.store", ["type" => "sermons", "id" => $sermon->id]) }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({
+            rating: selectedRating,
+            review: review
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast(data.message);
+            document.getElementById('avgRating').textContent = data.average_rating;
+            document.getElementById('ratingsCount').textContent = data.ratings_count;
+
+            // Close modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('ratingModal'));
+            modal.hide();
+
+            // Reset form
+            selectedRating = 0;
+            document.getElementById('review').value = '';
+            updateStars(0);
+        } else {
+            showToast(data.message || 'حدث خطأ أثناء إرسال التقييم', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('حدث خطأ أثناء إرسال التقييم', 'error');
+    });
+}
 
 // Share functions
 function shareOnFacebook() {
