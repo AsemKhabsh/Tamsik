@@ -915,17 +915,20 @@ function setupCalendar() {
     const daysInMonth = lastDay.getDate();
     const startingDayOfWeek = firstDay.getDay();
 
-    let calendarHTML = '';
-
     // أيام الأسبوع
     const dayNames = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+    let headerHTML = '<div class="calendar-days-header">';
     dayNames.forEach(day => {
-        calendarHTML += `<div class="calendar-day-header">${day}</div>`;
+        headerHTML += `<div class="calendar-day-header">${day}</div>`;
     });
+    headerHTML += '</div>';
+
+    // أيام الشهر
+    let daysHTML = '<div class="calendar-days-grid">';
 
     // الأيام الفارغة في بداية الشهر
     for (let i = 0; i < startingDayOfWeek; i++) {
-        calendarHTML += '<div class="calendar-day other-month"></div>';
+        daysHTML += '<div class="calendar-day other-month"></div>';
     }
 
     // أيام الشهر
@@ -936,7 +939,7 @@ function setupCalendar() {
 
         const dayEvents = getLecturesForDay(day);
 
-        calendarHTML += `
+        daysHTML += `
             <div class="calendar-day ${isToday ? 'today' : ''}">
                 <div class="day-number">${day}</div>
                 <div class="day-events">
@@ -946,7 +949,9 @@ function setupCalendar() {
         `;
     }
 
-    calendarGrid.innerHTML = calendarHTML;
+    daysHTML += '</div>';
+
+    calendarGrid.innerHTML = headerHTML + daysHTML;
 }
 
 // الحصول على المحاضرات لليوم المحدد

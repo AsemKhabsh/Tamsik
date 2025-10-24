@@ -375,12 +375,25 @@
 }
 
 .calendar-grid {
+    display: flex;
+    flex-direction: column;
+    background: var(--border-color);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.calendar-days-header {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 1px;
     background: var(--border-color);
-    border-radius: 8px;
-    overflow: hidden;
+}
+
+.calendar-days-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 1px;
+    background: var(--border-color);
 }
 
 .calendar-day {
