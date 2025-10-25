@@ -1,0 +1,33 @@
+# robots.txt for Tamsik Islamic Platform
+# https://www.robotstxt.org/
+
+User-agent: *
+Allow: /
+
+# Disallow admin and private areas
+Disallow: /admin/
+Disallow: /scholar/
+Disallow: /preacher/
+Disallow: /thinker/
+Disallow: /data-entry/
+
+# Disallow API endpoints
+Disallow: /api/
+
+# Disallow login and registration pages
+Disallow: /login
+Disallow: /register
+Disallow: /password/
+
+# Allow public content
+Allow: /sermons
+Allow: /articles
+Allow: /lectures
+Allow: /fatwas
+Allow: /scholars
+Allow: /preachers
+Allow: /thinkers
+
+# Sitemap location
+Sitemap: https://tamsik.com/sitemap.xml
+

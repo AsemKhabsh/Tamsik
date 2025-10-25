@@ -166,6 +166,12 @@
             @foreach($favorites as $favorite)
                 @php
                     $item = $favorite->favoritable;
+
+                    // تخطي المفضلات التالفة
+                    if (!$item) {
+                        continue;
+                    }
+
                     $typeClass = '';
                     $typeName = '';
                     $icon = '';

@@ -20,8 +20,11 @@ class FavoriteController extends Controller
         $user = Auth::user();
         $type = $request->get('type', 'all'); // all, sermons, articles, fatwas, lectures
 
+        // تنظيف المفضلات التي تحتوي على class غير موجود
+        $this->cleanInvalidFavorites($user);
+
         // جلب جميع المفضلات
-        $favoritesQuery = $user->favorites()->with('favoritable')->latest();
+        $favoritesQuery = $user->favorites()->latest();
 
         // تصفية حسب النوع
         if ($type !== 'all') {
@@ -38,6 +41,20 @@ class FavoriteController extends Controller
         }
 
         $favorites = $favoritesQuery->paginate(12);
+
+        // تحميل العلاقات بشكل آمن
+        $favorites->getCollection()->transform(function ($favorite) {
+            try {
+                if (class_exists($favorite->favoritable_type)) {
+                    $favorite->load('favoritable');
+                }
+            } catch (\Exception $e) {
+                // تجاهل الأخطاء وحذف المفضلة التالفة
+                $favorite->delete();
+                return null;
+            }
+            return $favorite;
+        })->filter(); // إزالة العناصر null
 
         // إحصائيات المفضلات
         $stats = [
@@ -65,6 +82,15 @@ class FavoriteController extends Controller
 
         // التحقق من وجود العنصر
         $model = $validated['favoritable_type'];
+
+        // التحقق من أن الـ Model موجود
+        if (!class_exists($model)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'نوع العنصر غير صحيح'
+            ], 400);
+        }
+
         $item = $model::find($validated['favoritable_id']);
 
         if (!$item) {
@@ -144,6 +170,39 @@ class FavoriteController extends Controller
 
         $user = Auth::user();
 
+        // Log للتأكد من البيانات المستلمة
+        \Log::info('Favorite Toggle Request', [
+            'user_id' => $user->id,
+            'favoritable_type' => $validated['favoritable_type'],
+            'favoritable_id' => $validated['favoritable_id'],
+            'class_exists' => class_exists($validated['favoritable_type'])
+        ]);
+
+        // التحقق من أن الـ Model موجود
+        $model = $validated['favoritable_type'];
+        if (!class_exists($model)) {
+            \Log::error('Class does not exist', ['class' => $model]);
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'نوع العنصر غير صحيح'
+                ], 400);
+            }
+            return back()->with('error', 'نوع العنصر غير صحيح');
+        }
+
+        // التحقق من وجود العنصر
+        $item = $model::find($validated['favoritable_id']);
+        if (!$item) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'العنصر غير موجود'
+                ], 404);
+            }
+            return back()->with('error', 'العنصر غير موجود');
+        }
+
         $favorite = $user->favorites()
             ->where('favoritable_type', $validated['favoritable_type'])
             ->where('favoritable_id', $validated['favoritable_id'])
@@ -154,14 +213,19 @@ class FavoriteController extends Controller
             $favorite->delete();
             $message = 'تمت الإزالة من المفضلات بنجاح';
             $isFavorited = false;
+            \Log::info('Favorite removed', ['favorite_id' => $favorite->id]);
         } else {
             // إضافة للمفضلات
-            $user->favorites()->create([
+            $newFavorite = $user->favorites()->create([
                 'favoritable_type' => $validated['favoritable_type'],
                 'favoritable_id' => $validated['favoritable_id'],
             ]);
             $message = 'تمت الإضافة للمفضلات بنجاح';
             $isFavorited = true;
+            \Log::info('Favorite added', [
+                'favorite_id' => $newFavorite->id,
+                'stored_type' => $newFavorite->favoritable_type
+            ]);
         }
 
         if ($request->expectsJson()) {
@@ -185,5 +249,34 @@ class FavoriteController extends Controller
 
         return redirect()->route('favorites')->with('success', 'تم حذف جميع المفضلات بنجاح');
     }
-}
 
+    /**
+     * تنظيف المفضلات التي تحتوي على class غير موجود
+     */
+    private function cleanInvalidFavorites($user)
+    {
+        $favorites = $user->favorites()->get();
+
+        foreach ($favorites as $favorite) {
+            // التحقق من وجود الـ class
+            if (!class_exists($favorite->favoritable_type)) {
+                $favorite->delete();
+                continue;
+            }
+
+            // التحقق من وجود العنصر في قاعدة البيانات
+            try {
+                $model = $favorite->favoritable_type;
+                $item = $model::find($favorite->favoritable_id);
+
+                if (!$item) {
+                    // العنصر محذوف، احذف المفضلة
+                    $favorite->delete();
+                }
+            } catch (\Exception $e) {
+                // خطأ في تحميل العنصر، احذف المفضلة
+                $favorite->delete();
+            }
+        }
+    }
+}

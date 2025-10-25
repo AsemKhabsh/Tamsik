@@ -15,6 +15,8 @@ use App\Http\Controllers\CommentController;
 use App\Http\Controllers\LikeController;
 use App\Http\Controllers\RatingController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\SitemapController;
+use App\Http\Controllers\AuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -58,11 +60,13 @@ if (app()->environment('local')) {
 // الصفحة الرئيسية
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
+// Sitemap
+Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
+
 // صفحات المحتوى العامة
 Route::get('/sermons', [SermonController::class, 'index'])->name('sermons.index');
-Route::get('/sermons/create', [SermonController::class, 'create'])->name('sermons.create');
-Route::get('/sermons/prepare', [SermonPreparationController::class, 'create'])->name('sermons.prepare');
-Route::post('/sermons', [SermonController::class, 'store'])->name('sermons.store');
+Route::get('/sermons/create', [SermonController::class, 'create'])->name('sermons.create')->middleware('auth');
+Route::post('/sermons', [SermonController::class, 'store'])->name('sermons.store')->middleware('auth');
 Route::get('/sermons/{id}', [SermonController::class, 'show'])->name('sermons.show');
 Route::get('/sermons/{id}/download', [SermonController::class, 'download'])->name('sermons.download');
 
@@ -74,102 +78,24 @@ Route::get('/search/quick', [App\Http\Controllers\SearchController::class, 'quic
     ->name('search.quick')
     ->middleware('throttle:60,1'); // 60 requests per minute
 
-// Auth routes
-Route::get('/login', function() {
-    return view('auth.login');
-})->name('login');
+// Auth routes - استخدام AuthController
+Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
+Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1'); // حماية من Brute Force: 5 محاولات في الدقيقة
 
-Route::post('/login', function(Request $request) {
-    $credentials = $request->validate([
-        'email' => 'required|email',
-        'password' => 'required',
-    ]);
+Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
+Route::post('/register', [AuthController::class, 'register']);
 
-    if (Auth::attempt($credentials, $request->filled('remember'))) {
-        $request->session()->regenerate();
-
-        // توجيه المدير إلى لوحة الإدارة (استخدام Spatie)
-        if (Auth::user()->hasRole('admin')) {
-            return redirect()->intended(route('admin.dashboard'));
-        }
-
-        // توجيه باقي المستخدمين إلى الصفحة المقصودة أو الرئيسية
-        return redirect()->intended(route('home'));
-    }
-
-    return back()->withErrors([
-        'email' => 'البيانات المدخلة غير صحيحة.',
-    ])->onlyInput('email');
-})->middleware('throttle:5,1'); // حماية من Brute Force: 5 محاولات في الدقيقة
-
-Route::get('/register', function() {
-    return view('auth.register');
-})->name('register');
-
-Route::post('/register', function(Request $request) {
-    $request->validate([
-        'name' => 'required|string|max:255',
-        'email' => 'required|string|email|max:255|unique:users',
-        'password' => 'required|string|min:8|confirmed',
-        'user_type' => 'required|string|in:member,preacher,scholar,thinker,data_entry',
-        'terms' => 'required|accepted',
-    ]);
-
-    $userType = $request->user_type;
-    $needsApproval = in_array($userType, ['preacher', 'scholar', 'thinker', 'data_entry']);
-
-    // إنشاء المستخدم
-    $user = User::create([
-        'name' => $request->name,
-        'email' => $request->email,
-        'password' => Hash::make($request->password),
-        'user_type' => $userType,
-        'is_active' => !$needsApproval,
-    ]);
-
-    // تعيين الدور باستخدام Spatie
-    // إذا كان يحتاج موافقة، نعطيه دور guest مؤقتاً
-    if ($needsApproval) {
-        $user->assignRole('guest');
-    } else {
-        $user->assignRole($userType);
-    }
-
-    if ($needsApproval) {
-        // إرسال إشعار للأدمن (يمكن تطويره لاحقاً)
-        // Mail::to('admin@tamsik.org')->send(new NewUserApprovalRequest($user));
-
-        return redirect()->route('register')->with('warning',
-            'تم إنشاء حسابك بنجاح! سيتم مراجعة طلبك من قبل الإدارة وستتلقى إشعاراً عبر البريد الإلكتروني عند تفعيل حسابك.');
-    }
-
-    Auth::login($user);
-    return redirect('/')->with('success', 'مرحباً بك في منصة تمسيك!');
-});
-
-Route::post('/logout', function(Request $request) {
-    Auth::logout();
-    $request->session()->invalidate();
-    $request->session()->regenerateToken();
-    return redirect('/');
-})->name('logout');
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // Routes مؤقتة لتسجيل الدخول السريع (للتطوير المحلي فقط)
 if (app()->environment('local')) {
-    Route::get('/quick-admin-login', function(Request $request) {
-        $admin = User::where('email', 'admin@tamsik.com')->first();
-        if ($admin) {
-            Auth::login($admin, true); // remember = true
-            $request->session()->regenerate();
-            return redirect('/admin')->with('success', 'تم تسجيل الدخول كمدير');
-        }
-        return redirect('/login')->with('error', 'لم يتم العثور على حساب المدير');
-    });
+    Route::get('/quick-admin-login', [AuthController::class, 'quickAdminLogin']);
 
+    // Quick preacher login - يمكن نقله لاحقاً إلى AuthController
     Route::get('/quick-preacher-login', function(Request $request) {
         $preacher = User::where('email', 'preacher@tamsik.com')->first();
         if ($preacher) {
-            Auth::login($preacher, true); // remember = true
+            Auth::login($preacher, true);
             $request->session()->regenerate();
             return redirect('/sermons/prepare')->with('success', 'تم تسجيل الدخول كخطيب');
         }
@@ -211,9 +137,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/{type}/{id}/rating/user', [RatingController::class, 'getUserRating'])->name('rating.user');
 });
 
-// مسارات إعداد الخطب (للخطباء والعلماء فقط)
+// مسارات إعداد الخطب (للخطباء والعلماء والأدمن)
 Route::middleware('preacher')->group(function () {
     // إدارة الخطب
+    Route::get('/sermons/prepare', [SermonPreparationController::class, 'create'])->name('sermons.prepare');
     Route::get('/prepare-sermon', [SermonPreparationController::class, 'create'])->name('sermon.prepare');
     Route::post('/prepare-sermon', [SermonPreparationController::class, 'store'])->name('sermon.store');
     Route::get('/my-sermons', [SermonPreparationController::class, 'mySermons'])->name('sermon.my');

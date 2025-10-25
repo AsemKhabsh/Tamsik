@@ -45,8 +45,8 @@ class StoreArticleRequest extends FormRequest
             // الوسوم
             'tags' => 'nullable|string|max:500',
             
-            // الصورة المميزة
-            'featured_image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+            // الصورة المميزة - تحسين الأمان
+            'featured_image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048|mimetypes:image/jpeg,image/png,image/jpg,image/webp',
             
             // SEO
             'meta_title' => 'nullable|string|max:60',
@@ -109,6 +109,35 @@ class StoreArticleRequest extends FormRequest
             'status' => 'الحالة',
             'is_featured' => 'حالة الإبراز',
         ];
+    }
+
+    /**
+     * Configure the validator instance.
+     *
+     * @param  \Illuminate\Validation\Validator  $validator
+     * @return void
+     */
+    public function withValidator($validator)
+    {
+        $validator->after(function ($validator) {
+            // التحقق من محتوى الصورة
+            if ($this->hasFile('featured_image')) {
+                $image = $this->file('featured_image');
+                $imageInfo = @getimagesize($image->getRealPath());
+
+                if ($imageInfo === false) {
+                    $validator->errors()->add('featured_image', 'الملف المرفوع ليس صورة صالحة');
+                }
+
+                // التحقق من أن الملف ليس ملف تنفيذي
+                $extension = strtolower($image->getClientOriginalExtension());
+                $dangerousExtensions = ['exe', 'bat', 'cmd', 'sh', 'php', 'js', 'html'];
+
+                if (in_array($extension, $dangerousExtensions)) {
+                    $validator->errors()->add('featured_image', 'نوع الملف غير مسموح به');
+                }
+            }
+        });
     }
 }
 

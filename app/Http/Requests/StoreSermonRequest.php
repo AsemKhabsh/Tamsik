@@ -60,10 +60,10 @@ class StoreSermonRequest extends FormRequest
             // المراجع
             'references' => 'nullable|string|max:2000',
             
-            // الملفات
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
-            'audio_file' => 'nullable|mimes:mp3,wav,m4a|max:20480',
-            'video_file' => 'nullable|mimes:mp4,avi,mov|max:51200',
+            // الملفات - تحسين الأمان
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048|mimetypes:image/jpeg,image/png,image/jpg,image/webp',
+            'audio_file' => 'nullable|mimes:mp3,wav,m4a|max:20480|mimetypes:audio/mpeg,audio/wav,audio/mp4',
+            'video_file' => 'nullable|mimes:mp4,avi,mov|max:51200|mimetypes:video/mp4,video/x-msvideo,video/quicktime',
             
             // الحالة
             'is_published' => 'nullable|boolean',
@@ -166,6 +166,49 @@ class StoreSermonRequest extends FormRequest
                 'references' => $this->references,
             ]);
         }
+    }
+
+    /**
+     * Configure the validator instance.
+     *
+     * @param  \Illuminate\Validation\Validator  $validator
+     * @return void
+     */
+    public function withValidator($validator)
+    {
+        $validator->after(function ($validator) {
+            // التحقق من محتوى الصورة
+            if ($this->hasFile('image')) {
+                $image = $this->file('image');
+                $imageInfo = @getimagesize($image->getRealPath());
+
+                if ($imageInfo === false) {
+                    $validator->errors()->add('image', 'الملف المرفوع ليس صورة صالحة');
+                }
+            }
+
+            // التحقق من أن الملف الصوتي ليس ملف تنفيذي
+            if ($this->hasFile('audio_file')) {
+                $audio = $this->file('audio_file');
+                $extension = strtolower($audio->getClientOriginalExtension());
+                $dangerousExtensions = ['exe', 'bat', 'cmd', 'sh', 'php', 'js', 'html'];
+
+                if (in_array($extension, $dangerousExtensions)) {
+                    $validator->errors()->add('audio_file', 'نوع الملف غير مسموح به');
+                }
+            }
+
+            // التحقق من أن ملف الفيديو ليس ملف تنفيذي
+            if ($this->hasFile('video_file')) {
+                $video = $this->file('video_file');
+                $extension = strtolower($video->getClientOriginalExtension());
+                $dangerousExtensions = ['exe', 'bat', 'cmd', 'sh', 'php', 'js', 'html'];
+
+                if (in_array($extension, $dangerousExtensions)) {
+                    $validator->errors()->add('video_file', 'نوع الملف غير مسموح به');
+                }
+            }
+        });
     }
 }
 

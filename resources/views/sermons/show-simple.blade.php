@@ -456,19 +456,43 @@ use App\Models\Rating;
             const favoriteBtn = document.getElementById('favoriteBtn');
             const favoriteIcon = document.getElementById('favoriteIcon');
 
+            const requestData = {
+                favoritable_type: {!! json_encode(\App\Models\Sermon::class) !!},
+                favoritable_id: {{ $sermon->id }}
+            };
+
+            console.log('🔖 Sending favorite request:', requestData);
+
             fetch('{{ route("favorites.toggle") }}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
                 },
-                body: JSON.stringify({
-                    favoritable_type: '{{ \App\Models\Sermon::class }}',
-                    favoritable_id: {{ $sermon->id }}
-                })
+                body: JSON.stringify(requestData)
             })
-            .then(response => response.json())
+            .then(response => {
+                console.log('📡 Response status:', response.status);
+                console.log('📡 Response headers:', response.headers.get('content-type'));
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                return response.text().then(text => {
+                    console.log('📄 Raw response:', text);
+                    try {
+                        return JSON.parse(text);
+                    } catch (e) {
+                        console.error('❌ JSON parse error:', e);
+                        console.error('❌ Response text:', text);
+                        throw new Error('Invalid JSON response');
+                    }
+                });
+            })
             .then(data => {
+                console.log('✅ Response data:', data);
                 if (data.success) {
                     if (data.is_favorited) {
                         favoriteIcon.classList.remove('far');
@@ -476,17 +500,22 @@ use App\Models\Rating;
                         favoriteBtn.style.background = '#ffc107';
                         favoriteBtn.style.color = 'white';
                         favoriteBtn.innerHTML = '<i class="fas fa-bookmark" style="margin-left: 8px;"></i> محفوظة';
+                        console.log('✅ تمت الإضافة للمفضلات');
                     } else {
                         favoriteIcon.classList.remove('fas');
                         favoriteIcon.classList.add('far');
                         favoriteBtn.style.background = 'white';
                         favoriteBtn.style.color = '#ffc107';
                         favoriteBtn.innerHTML = '<i class="far fa-bookmark" style="margin-left: 8px;"></i> حفظ';
+                        console.log('✅ تمت الإزالة من المفضلات');
                     }
+                } else {
+                    console.error('❌ فشل الطلب:', data.message);
+                    alert(data.message || 'حدث خطأ أثناء الحفظ');
                 }
             })
             .catch(error => {
-                console.error('Error:', error);
+                console.error('❌ Error:', error);
                 alert('حدث خطأ أثناء الحفظ. حاول مرة أخرى.');
             });
         }

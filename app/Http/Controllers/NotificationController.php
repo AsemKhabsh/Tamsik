@@ -51,7 +51,12 @@ class NotificationController extends Controller
             return redirect($notification->data['url']);
         }
 
-        return redirect()->back();
+        // إذا كان الإشعار عن فتوى ولا يوجد url، نبني الرابط
+        if (isset($notification->data['fatwa_id'])) {
+            return redirect()->route('fatwas.show', $notification->data['fatwa_id']);
+        }
+
+        return redirect()->route('notifications.index')->with('info', 'تم تحديد الإشعار كمقروء');
     }
 
     /**

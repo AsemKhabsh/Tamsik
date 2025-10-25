@@ -964,15 +964,34 @@ function toggleFavorite() {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Accept': 'application/json'
         },
         body: JSON.stringify({
-            favoritable_type: '{{ \App\Models\Fatwa::class }}',
+            favoritable_type: {!! json_encode(\App\Models\Fatwa::class) !!},
             favoritable_id: {{ $fatwa->id }}
         })
     })
-    .then(response => response.json())
+    .then(response => {
+        console.log('📡 Response status:', response.status);
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        return response.text().then(text => {
+            console.log('📄 Raw response:', text);
+            try {
+                return JSON.parse(text);
+            } catch (e) {
+                console.error('❌ JSON parse error:', e);
+                console.error('❌ Response text:', text);
+                throw new Error('Invalid JSON response');
+            }
+        });
+    })
     .then(data => {
+        console.log('✅ Response data:', data);
         if (data.success) {
             if (data.is_favorited) {
                 favoriteIcon.classList.remove('far');
