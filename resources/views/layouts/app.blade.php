@@ -226,7 +226,7 @@
                     </li>
 
                     @auth
-                        @if(in_array(auth()->user()->user_type, ['admin', 'preacher', 'scholar', 'thinker', 'data_entry']))
+                        @if(auth()->user()->hasAnyRole(['admin', 'preacher', 'scholar', 'thinker', 'data_entry']))
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" href="#" id="contentDropdown" role="button"
                                    data-bs-toggle="dropdown" aria-expanded="false">
@@ -234,7 +234,7 @@
                                     إنشاء محتوى
                                 </a>
                                 <ul class="dropdown-menu" aria-labelledby="contentDropdown">
-                                    @if(in_array(auth()->user()->user_type, ['admin', 'preacher']))
+                                    @if(auth()->user()->hasAnyRole(['admin', 'preacher']))
                                         <li>
                                             <a class="dropdown-item" href="{{ route('sermons.prepare') }}">
                                                 <i class="fas fa-pen me-2"></i>
@@ -243,7 +243,7 @@
                                         </li>
                                     @endif
 
-                                    @if(in_array(auth()->user()->user_type, ['admin', 'scholar', 'preacher']))
+                                    @if(auth()->user()->hasAnyRole(['admin', 'scholar', 'preacher']))
                                         <li>
                                             <a class="dropdown-item" href="{{ route('lectures.create') }}">
                                                 <i class="fas fa-chalkboard-teacher me-2"></i>
@@ -254,16 +254,16 @@
 
                                     <li><hr class="dropdown-divider"></li>
 
-                                    @if(in_array(auth()->user()->user_type, ['admin', 'preacher']))
+                                    @if(auth()->user()->hasAnyRole(['admin', 'preacher']))
                                         <li>
-                                            <a class="dropdown-item" href="{{ route('sermons.index') }}">
+                                            <a class="dropdown-item" href="{{ route('sermon.my') }}">
                                                 <i class="fas fa-book-open me-2"></i>
                                                 خطبي
                                             </a>
                                         </li>
                                     @endif
 
-                                    @if(in_array(auth()->user()->user_type, ['admin', 'scholar', 'preacher']))
+                                    @if(auth()->user()->hasAnyRole(['admin', 'scholar', 'preacher']))
                                         <li>
                                             <a class="dropdown-item" href="{{ route('lectures.my') }}">
                                                 <i class="fas fa-chalkboard-teacher me-2"></i>
@@ -391,7 +391,7 @@
                                         <span class="badge bg-danger ms-1">{{ Auth::user()->unreadNotifications->count() }}</span>
                                     @endif
                                 </a></li>
-                                @if(Auth::user()->hasRole('scholar') || Auth::user()->user_type === 'scholar')
+                                @if(Auth::user()->hasRole('scholar'))
                                     <li><hr class="dropdown-divider"></li>
                                     <li><a class="dropdown-item" href="{{ route('scholar.dashboard') }}">
                                         <i class="fas fa-graduation-cap me-1"></i>
