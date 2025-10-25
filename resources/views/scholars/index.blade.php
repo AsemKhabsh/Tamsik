@@ -20,10 +20,13 @@
                     تصفح الفتاوى
                 </a>
                 @auth
-                    <a href="{{ route('questions.ask') }}" class="btn btn-primary">
-                        <i class="fas fa-question-circle me-2"></i>
-                        اطرح سؤالاً
-                    </a>
+                    {{-- إخفاء زر اطرح سؤال عن العلماء لأنهم يجيبون على الأسئلة ولا يطرحونها --}}
+                    @if(!auth()->user()->hasRole('scholar'))
+                        <a href="{{ route('questions.ask') }}" class="btn btn-primary">
+                            <i class="fas fa-question-circle me-2"></i>
+                            اطرح سؤالاً
+                        </a>
+                    @endif
                 @else
                     <a href="{{ route('login') }}" class="btn btn-outline-primary">
                         <i class="fas fa-sign-in-alt me-2"></i>

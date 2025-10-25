@@ -320,10 +320,13 @@
 
                 {{-- زر طرح سؤال --}}
                 @auth
-                    <a href="{{ route('questions.ask') }}" class="btn btn-success" style="padding: 12px 30px; border-radius: 5px; text-decoration: none; display: inline-block; font-weight: bold;">
-                        <i class="fas fa-question-circle me-2"></i>
-                        اطرح سؤالاً
-                    </a>
+                    {{-- إخفاء زر اطرح سؤال عن العلماء لأنهم يجيبون على الأسئلة ولا يطرحونها --}}
+                    @if(!auth()->user()->hasRole('scholar'))
+                        <a href="{{ route('questions.ask') }}" class="btn btn-success" style="padding: 12px 30px; border-radius: 5px; text-decoration: none; display: inline-block; font-weight: bold;">
+                            <i class="fas fa-question-circle me-2"></i>
+                            اطرح سؤالاً
+                        </a>
+                    @endif
                 @else
                     <a href="{{ route('login') }}" class="btn" style="background: #6c757d !important; color: white !important; padding: 12px 30px; border-radius: 5px; text-decoration: none; display: inline-block; font-weight: bold; box-shadow: 0 2px 8px rgba(108,117,125,0.3);">
                         <i class="fas fa-sign-in-alt me-2"></i>
