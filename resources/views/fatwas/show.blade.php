@@ -49,10 +49,12 @@
                     <h1 class="fatwa-detail-title">{{ $fatwa->title }}</h1>
 
                     <div class="fatwa-meta-bar">
+                        @if($fatwa->scholar)
                         <div class="meta-item">
                             <i class="fas fa-user-graduate"></i>
                             <a href="{{ route('fatwas.scholar', $fatwa->scholar_id) }}">{{ $fatwa->scholar->name }}</a>
                         </div>
+                        @endif
                         <div class="meta-item">
                             <i class="fas fa-calendar-alt"></i>
                             {{ $fatwa->published_at ? $fatwa->published_at->format('d/m/Y') : $fatwa->created_at->format('d/m/Y') }}
@@ -201,6 +203,7 @@
         <!-- Sidebar -->
         <div class="col-lg-4">
             <!-- Scholar Info -->
+            @if($fatwa->scholar)
             <div class="sidebar-card scholar-card mb-4">
                 <div class="scholar-card-header">
                     <div class="scholar-avatar-large">
@@ -251,6 +254,7 @@
                     </div>
                 </div>
             </div>
+            @endif
 
             <!-- Related Fatwas -->
             @if($relatedFatwas->count() > 0)
@@ -276,24 +280,33 @@
             @endif
 
             <!-- Ask Question CTA -->
-            <div class="sidebar-card bg-success text-white">
-                <h4 class="sidebar-title text-white">
-                    <i class="fas fa-question-circle me-2"></i>
-                    هل لديك سؤال؟
-                </h4>
-                <p class="mb-3">اطرح سؤالك وسيجيب عليه أحد علمائنا</p>
-                @auth
-                    <a href="{{ route('questions.ask') }}" class="btn btn-light w-100">
-                        <i class="fas fa-pen me-2"></i>
-                        اطرح سؤالك
-                    </a>
-                @else
+            @auth
+                @if(!Auth::user()->hasRole('admin') && !Auth::user()->hasRole('scholar') && Auth::user()->user_type !== 'scholar')
+                    <div class="sidebar-card bg-success text-white">
+                        <h4 class="sidebar-title text-white">
+                            <i class="fas fa-question-circle me-2"></i>
+                            هل لديك سؤال؟
+                        </h4>
+                        <p class="mb-3">اطرح سؤالك وسيجيب عليه أحد علمائنا</p>
+                        <a href="{{ route('questions.ask') }}" class="btn btn-light w-100">
+                            <i class="fas fa-pen me-2"></i>
+                            اطرح سؤالك
+                        </a>
+                    </div>
+                @endif
+            @else
+                <div class="sidebar-card bg-success text-white">
+                    <h4 class="sidebar-title text-white">
+                        <i class="fas fa-question-circle me-2"></i>
+                        هل لديك سؤال؟
+                    </h4>
+                    <p class="mb-3">اطرح سؤالك وسيجيب عليه أحد علمائنا</p>
                     <a href="{{ route('login') }}" class="btn btn-light w-100">
                         <i class="fas fa-sign-in-alt me-2"></i>
                         سجل دخولك
                     </a>
-                @endauth
-            </div>
+                </div>
+            @endauth
         </div>
     </div>
 </div>

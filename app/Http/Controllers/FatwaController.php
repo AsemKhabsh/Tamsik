@@ -46,8 +46,10 @@ class FatwaController extends Controller
             $relatedFatwas = $this->fatwaService->getRelatedFatwas($id, 5);
 
             return view('fatwas.show', compact('fatwa', 'relatedFatwas'));
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return redirect()->route('fatwas.index')->with('error', 'عذراً، الفتوى المطلوبة غير متاحة أو قيد المراجعة.');
         } catch (\Exception $e) {
-            return redirect()->route('fatwas.index')->with('error', 'حدث خطأ أثناء عرض الفتوى: ' . $e->getMessage());
+            return redirect()->route('fatwas.index')->with('error', 'حدث خطأ أثناء عرض الفتوى.');
         }
     }
 

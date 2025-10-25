@@ -481,9 +481,8 @@ class AdminController extends Controller
      */
     public function editFatwa(Fatwa $fatwa)
     {
-        // جلب قائمة العلماء
-        $scholars = User::where('role', 'scholar')
-            ->orWhere('user_type', 'scholar')
+        // جلب قائمة العلماء باستخدام Spatie Permission
+        $scholars = User::role('scholar')
             ->where('is_active', true)
             ->orderBy('name')
             ->get();

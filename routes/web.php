@@ -298,6 +298,13 @@ Route::middleware('auth')->group(function () {
     Route::post('/profile/change-password', [\App\Http\Controllers\ProfileController::class, 'changePassword'])->name('profile.change-password');
     Route::delete('/profile/avatar', [\App\Http\Controllers\ProfileController::class, 'deleteAvatar'])->name('profile.delete-avatar');
 
+    // الإشعارات
+    Route::get('/notifications', [\App\Http\Controllers\NotificationController::class, 'index'])->name('notifications.index');
+    Route::get('/notifications/unread', [\App\Http\Controllers\NotificationController::class, 'unread'])->name('notifications.unread');
+    Route::post('/notifications/{id}/read', [\App\Http\Controllers\NotificationController::class, 'markAsRead'])->name('notifications.read');
+    Route::post('/notifications/read-all', [\App\Http\Controllers\NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
+    Route::delete('/notifications/{id}', [\App\Http\Controllers\NotificationController::class, 'destroy'])->name('notifications.destroy');
+
     // المفضلات
     Route::get('/favorites', [\App\Http\Controllers\FavoriteController::class, 'index'])->name('favorites');
     Route::post('/favorites/toggle', [\App\Http\Controllers\FavoriteController::class, 'toggle'])->name('favorites.toggle');
@@ -318,6 +325,20 @@ Route::middleware('auth')->group(function () {
     Route::get('/ask-question', [\App\Http\Controllers\QuestionController::class, 'create'])->name('questions.ask');
     Route::post('/ask-question', [\App\Http\Controllers\QuestionController::class, 'store'])->name('questions.store');
     Route::get('/my-questions', [\App\Http\Controllers\QuestionController::class, 'myQuestions'])->name('questions.my');
+});
+
+// مسارات لوحة تحكم العالم (تتطلب تسجيل دخول وصلاحية عالم)
+Route::prefix('scholar')->name('scholar.')->middleware('auth')->group(function () {
+    Route::get('/dashboard', [\App\Http\Controllers\ScholarDashboardController::class, 'dashboard'])->name('dashboard');
+
+    Route::prefix('questions')->name('questions.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\ScholarDashboardController::class, 'questions'])->name('index');
+        Route::get('/{id}', [\App\Http\Controllers\ScholarDashboardController::class, 'showQuestion'])->name('show');
+        Route::post('/{id}/answer', [\App\Http\Controllers\ScholarDashboardController::class, 'answerQuestion'])->name('answer');
+        Route::put('/{id}/update', [\App\Http\Controllers\ScholarDashboardController::class, 'updateAnswer'])->name('update');
+        Route::put('/{id}/publish', [\App\Http\Controllers\ScholarDashboardController::class, 'publishAnswer'])->name('publish');
+        Route::put('/{id}/unpublish', [\App\Http\Controllers\ScholarDashboardController::class, 'unpublishAnswer'])->name('unpublish');
+    });
 });
 
 Route::get('/articles', function() {

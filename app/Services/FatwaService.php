@@ -25,10 +25,11 @@ class FatwaService
      */
     public function getFatwaById($id)
     {
-        return Fatwa::where('is_published', true)
+        return Fatwa::where('id', $id)
+            ->where('is_published', true)
             ->whereNotNull('answer')
             ->with('scholar')
-            ->findOrFail($id);
+            ->firstOrFail();
     }
 
     /**
@@ -253,6 +254,78 @@ class FatwaService
             ->with('scholar')
             ->orderBy('created_at', 'desc')
             ->paginate($perPage);
+    }
+
+    /**
+     * الحصول على أسئلة العالم (الموجهة له)
+     */
+    public function getScholarQuestions($scholarId, $status = 'all', $perPage = 20)
+    {
+        $query = Fatwa::where('scholar_id', $scholarId)
+            ->with(['questioner']);
+
+        if ($status === 'pending') {
+            $query->where('is_published', false)
+                  ->where(function($q) {
+                      $q->whereNull('answer')->orWhere('answer', '');
+                  });
+        } elseif ($status === 'answered') {
+            $query->where('is_published', true)
+                  ->whereNotNull('answer')
+                  ->where('answer', '!=', '');
+        } elseif ($status === 'draft') {
+            $query->where('is_published', false)
+                  ->whereNotNull('answer')
+                  ->where('answer', '!=', '');
+        }
+
+        return $query->orderBy('created_at', 'desc')
+                     ->paginate($perPage);
+    }
+
+    /**
+     * الحصول على إحصائيات أسئلة العالم
+     */
+    public function getScholarQuestionsStats($scholarId)
+    {
+        $total = Fatwa::where('scholar_id', $scholarId)->count();
+
+        $pending = Fatwa::where('scholar_id', $scholarId)
+            ->where('is_published', false)
+            ->where(function($q) {
+                $q->whereNull('answer')->orWhere('answer', '');
+            })
+            ->count();
+
+        $answered = Fatwa::where('scholar_id', $scholarId)
+            ->where('is_published', true)
+            ->whereNotNull('answer')
+            ->where('answer', '!=', '')
+            ->count();
+
+        $draft = Fatwa::where('scholar_id', $scholarId)
+            ->where('is_published', false)
+            ->whereNotNull('answer')
+            ->where('answer', '!=', '')
+            ->count();
+
+        return [
+            'total' => $total,
+            'pending' => $pending,
+            'answered' => $answered,
+            'draft' => $draft,
+        ];
+    }
+
+    /**
+     * الحصول على سؤال واحد للعالم
+     */
+    public function getScholarQuestion($scholarId, $questionId)
+    {
+        return Fatwa::where('id', $questionId)
+            ->where('scholar_id', $scholarId)
+            ->with(['questioner', 'scholar'])
+            ->firstOrFail();
     }
 }
 

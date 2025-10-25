@@ -117,24 +117,33 @@
     @endif
 
     <!-- Ask Question Section -->
-    <div class="ask-question-section mt-5 p-4 text-center" style="background: linear-gradient(135deg, #1d8a4e, #0f7346); border-radius: 10px; color: white;">
-        <h3 class="mb-3">
-            <i class="fas fa-question-circle me-2"></i>
-            هل لديك سؤال؟
-        </h3>
-        <p class="mb-4">اطرح سؤالك وسيجيب عليه أحد علمائنا الأفاضل</p>
-        @auth
-            <a href="{{ route('questions.ask') }}" class="btn btn-light btn-lg">
-                <i class="fas fa-pen me-2"></i>
-                اطرح سؤالك الآن
-            </a>
-        @else
+    @auth
+        @if(!Auth::user()->hasRole('admin') && !Auth::user()->hasRole('scholar') && Auth::user()->user_type !== 'scholar')
+            <div class="ask-question-section mt-5 p-4 text-center" style="background: linear-gradient(135deg, #1d8a4e, #0f7346); border-radius: 10px; color: white;">
+                <h3 class="mb-3">
+                    <i class="fas fa-question-circle me-2"></i>
+                    هل لديك سؤال؟
+                </h3>
+                <p class="mb-4">اطرح سؤالك وسيجيب عليه أحد علمائنا الأفاضل</p>
+                <a href="{{ route('questions.ask') }}" class="btn btn-light btn-lg">
+                    <i class="fas fa-pen me-2"></i>
+                    اطرح سؤالك الآن
+                </a>
+            </div>
+        @endif
+    @else
+        <div class="ask-question-section mt-5 p-4 text-center" style="background: linear-gradient(135deg, #1d8a4e, #0f7346); border-radius: 10px; color: white;">
+            <h3 class="mb-3">
+                <i class="fas fa-question-circle me-2"></i>
+                هل لديك سؤال؟
+            </h3>
+            <p class="mb-4">اطرح سؤالك وسيجيب عليه أحد علمائنا الأفاضل</p>
             <a href="{{ route('login') }}" class="btn btn-light btn-lg">
                 <i class="fas fa-sign-in-alt me-2"></i>
                 سجل دخولك لطرح سؤال
             </a>
-        @endauth
-    </div>
+        </div>
+    @endauth
 </div>
 
 <style>

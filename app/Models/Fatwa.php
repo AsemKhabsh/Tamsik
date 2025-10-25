@@ -50,6 +50,11 @@ class Fatwa extends Model
         return $this->belongsTo(User::class, 'scholar_id');
     }
 
+    public function questioner()
+    {
+        return $this->belongsTo(User::class, 'questioner_id');
+    }
+
     public function category()
     {
         return $this->belongsTo(Category::class);

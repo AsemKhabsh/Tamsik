@@ -316,6 +316,67 @@
                             </a>
                         </li>
                     @else
+                        <!-- Notifications Bell -->
+                        <li class="nav-item dropdown me-2">
+                            <a class="nav-link position-relative" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-bell fa-lg"></i>
+                                @if(Auth::user()->unreadNotifications->count() > 0)
+                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                        {{ Auth::user()->unreadNotifications->count() > 9 ? '9+' : Auth::user()->unreadNotifications->count() }}
+                                        <span class="visually-hidden">إشعارات غير مقروءة</span>
+                                    </span>
+                                @endif
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end notification-dropdown" style="min-width: 350px; max-height: 400px; overflow-y: auto;">
+                                <li class="dropdown-header d-flex justify-content-between align-items-center">
+                                    <span><strong>الإشعارات</strong></span>
+                                    @if(Auth::user()->unreadNotifications->count() > 0)
+                                        <form action="{{ route('notifications.read-all') }}" method="POST" class="d-inline">
+                                            @csrf
+                                            <button type="submit" class="btn btn-sm btn-link text-success p-0" style="text-decoration: none;">
+                                                تحديد الكل كمقروء
+                                            </button>
+                                        </form>
+                                    @endif
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+
+                                @forelse(Auth::user()->unreadNotifications->take(5) as $notification)
+                                    <li>
+                                        <a class="dropdown-item {{ $notification->read_at ? '' : 'bg-light' }}" href="{{ route('notifications.read', $notification->id) }}" onclick="event.preventDefault(); document.getElementById('notification-form-{{ $notification->id }}').submit();">
+                                            <div class="d-flex align-items-start">
+                                                <i class="fas fa-comment-dots text-success me-2 mt-1"></i>
+                                                <div class="flex-grow-1">
+                                                    <p class="mb-1 small">{{ Str::limit($notification->data['message'] ?? 'إشعار جديد', 60) }}</p>
+                                                    <small class="text-muted">{{ $notification->created_at->diffForHumans() }}</small>
+                                                </div>
+                                            </div>
+                                        </a>
+                                        <form id="notification-form-{{ $notification->id }}" action="{{ route('notifications.read', $notification->id) }}" method="POST" class="d-none">
+                                            @csrf
+                                        </form>
+                                    </li>
+                                @empty
+                                    <li>
+                                        <div class="dropdown-item text-center text-muted py-3">
+                                            <i class="fas fa-bell-slash fa-2x mb-2"></i>
+                                            <p class="mb-0">لا توجد إشعارات جديدة</p>
+                                        </div>
+                                    </li>
+                                @endforelse
+
+                                @if(Auth::user()->unreadNotifications->count() > 0)
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <a class="dropdown-item text-center text-success" href="{{ route('notifications.index') }}">
+                                            <strong>عرض جميع الإشعارات</strong>
+                                        </a>
+                                    </li>
+                                @endif
+                            </ul>
+                        </li>
+
+                        <!-- User Dropdown -->
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                                 <i class="fas fa-user me-1"></i>
@@ -324,6 +385,19 @@
                             <ul class="dropdown-menu">
                                 <li><a class="dropdown-item" href="{{ route('profile') }}">الملف الشخصي</a></li>
                                 <li><a class="dropdown-item" href="{{ route('favorites') }}">المفضلات</a></li>
+                                <li><a class="dropdown-item" href="{{ route('notifications.index') }}">
+                                    الإشعارات
+                                    @if(Auth::user()->unreadNotifications->count() > 0)
+                                        <span class="badge bg-danger ms-1">{{ Auth::user()->unreadNotifications->count() }}</span>
+                                    @endif
+                                </a></li>
+                                @if(Auth::user()->hasRole('scholar') || Auth::user()->user_type === 'scholar')
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="{{ route('scholar.dashboard') }}">
+                                        <i class="fas fa-graduation-cap me-1"></i>
+                                        لوحة العالم
+                                    </a></li>
+                                @endif
                                 @can('view_admin_panel')
                                     <li><hr class="dropdown-divider"></li>
                                     <li><a class="dropdown-item" href="{{ route('admin.dashboard') }}">لوحة الإدارة</a></li>

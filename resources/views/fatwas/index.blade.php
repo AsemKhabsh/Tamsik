@@ -51,10 +51,12 @@
                         <h3 class="fatwa-title">
                             <a href="{{ route('fatwas.show', $fatwa->id) }}">{{ $fatwa->title }}</a>
                         </h3>
+                        @if($fatwa->scholar)
                         <div class="fatwa-scholar mb-2">
                             <i class="fas fa-user-graduate"></i>
                             <a href="{{ route('fatwas.scholar', $fatwa->scholar_id) }}">{{ $fatwa->scholar->name }}</a>
                         </div>
+                        @endif
                         <div class="fatwa-question">
                             <strong>السؤال:</strong>
                             <p>{{ Str::limit(strip_tags($fatwa->question), 120) }}</p>
@@ -85,13 +87,15 @@
             <i class="fas fa-info-circle mb-3" style="font-size: 4rem; color: #ccc;"></i>
             <h3 class="text-muted">لا توجد فتاوى متاحة حالياً</h3>
             <p class="text-muted">لم يتم نشر أي فتاوى بعد</p>
-            
+
             <div class="mt-4">
                 @auth
-                    <a href="{{ route('questions.ask') }}" class="btn btn-primary">
-                        <i class="fas fa-question-circle me-2"></i>
-                        اطرح سؤالاً
-                    </a>
+                    @if(!Auth::user()->hasRole('admin') && !Auth::user()->hasRole('scholar') && Auth::user()->user_type !== 'scholar')
+                        <a href="{{ route('questions.ask') }}" class="btn btn-primary">
+                            <i class="fas fa-question-circle me-2"></i>
+                            اطرح سؤالاً
+                        </a>
+                    @endif
                 @else
                     <a href="{{ route('login') }}" class="btn btn-outline-primary">
                         <i class="fas fa-sign-in-alt me-2"></i>
@@ -103,24 +107,33 @@
     @endif
 
     <!-- Ask Question Section -->
-    <div class="ask-question-section mt-5 p-4 text-center" style="background: linear-gradient(135deg, #1d8a4e, #0f7346); border-radius: 10px; color: white;">
-        <h3 class="mb-3">
-            <i class="fas fa-question-circle me-2"></i>
-            هل لديك سؤال؟
-        </h3>
-        <p class="mb-4">اطرح سؤالك وسيجيب عليه أحد علمائنا الأفاضل</p>
-        @auth
-            <a href="{{ route('questions.ask') }}" class="btn btn-light btn-lg">
-                <i class="fas fa-pen me-2"></i>
-                اطرح سؤالك الآن
-            </a>
-        @else
+    @auth
+        @if(!Auth::user()->hasRole('admin') && !Auth::user()->hasRole('scholar') && Auth::user()->user_type !== 'scholar')
+            <div class="ask-question-section mt-5 p-4 text-center" style="background: linear-gradient(135deg, #1d8a4e, #0f7346); border-radius: 10px; color: white;">
+                <h3 class="mb-3">
+                    <i class="fas fa-question-circle me-2"></i>
+                    هل لديك سؤال؟
+                </h3>
+                <p class="mb-4">اطرح سؤالك وسيجيب عليه أحد علمائنا الأفاضل</p>
+                <a href="{{ route('questions.ask') }}" class="btn btn-light btn-lg">
+                    <i class="fas fa-pen me-2"></i>
+                    اطرح سؤالك الآن
+                </a>
+            </div>
+        @endif
+    @else
+        <div class="ask-question-section mt-5 p-4 text-center" style="background: linear-gradient(135deg, #1d8a4e, #0f7346); border-radius: 10px; color: white;">
+            <h3 class="mb-3">
+                <i class="fas fa-question-circle me-2"></i>
+                هل لديك سؤال؟
+            </h3>
+            <p class="mb-4">اطرح سؤالك وسيجيب عليه أحد علمائنا الأفاضل</p>
             <a href="{{ route('login') }}" class="btn btn-light btn-lg">
                 <i class="fas fa-sign-in-alt me-2"></i>
                 سجل دخولك لطرح سؤال
             </a>
-        @endauth
-    </div>
+        </div>
+    @endauth
 </div>
 
 <style>
