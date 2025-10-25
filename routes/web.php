@@ -88,8 +88,8 @@ Route::post('/login', function(Request $request) {
     if (Auth::attempt($credentials, $request->filled('remember'))) {
         $request->session()->regenerate();
 
-        // توجيه المدير إلى لوحة الإدارة
-        if (Auth::user()->role === 'admin') {
+        // توجيه المدير إلى لوحة الإدارة (استخدام Spatie)
+        if (Auth::user()->hasRole('admin')) {
             return redirect()->intended(route('admin.dashboard'));
         }
 
@@ -118,14 +118,22 @@ Route::post('/register', function(Request $request) {
     $userType = $request->user_type;
     $needsApproval = in_array($userType, ['preacher', 'scholar', 'thinker', 'data_entry']);
 
+    // إنشاء المستخدم
     $user = User::create([
         'name' => $request->name,
         'email' => $request->email,
         'password' => Hash::make($request->password),
         'user_type' => $userType,
-        'role' => $userType === 'member' ? 'member' : 'pending',
         'is_active' => !$needsApproval,
     ]);
+
+    // تعيين الدور باستخدام Spatie
+    // إذا كان يحتاج موافقة، نعطيه دور guest مؤقتاً
+    if ($needsApproval) {
+        $user->assignRole('guest');
+    } else {
+        $user->assignRole($userType);
+    }
 
     if ($needsApproval) {
         // إرسال إشعار للأدمن (يمكن تطويره لاحقاً)
@@ -267,6 +275,14 @@ Route::prefix('admin')->name('admin.')->middleware('admin')->group(function () {
     Route::post('/articles/{article}/approve', [AdminController::class, 'approveArticle'])->name('articles.approve');
     Route::post('/articles/{article}/reject', [AdminController::class, 'rejectArticle'])->name('articles.reject');
     Route::delete('/articles/{article}', [AdminController::class, 'deleteArticle'])->name('articles.delete');
+
+    // Fatwas Management
+    Route::get('/fatwas', [AdminController::class, 'fatwas'])->name('fatwas');
+    Route::get('/fatwas/create', [AdminController::class, 'createFatwa'])->name('fatwas.create');
+    Route::post('/fatwas', [AdminController::class, 'storeFatwa'])->name('fatwas.store');
+    Route::get('/fatwas/{fatwa}/edit', [AdminController::class, 'editFatwa'])->name('fatwas.edit');
+    Route::put('/fatwas/{fatwa}', [AdminController::class, 'updateFatwa'])->name('fatwas.update');
+    Route::delete('/fatwas/{fatwa}', [AdminController::class, 'deleteFatwa'])->name('fatwas.delete');
 });
 
 // صفحات ثابتة

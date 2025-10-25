@@ -16,9 +16,9 @@ class LectureManagementController extends Controller
     {
         $user = Auth::user();
 
-        // التحقق من صلاحية المستخدم
-        if (!in_array($user->user_type, ['admin', 'preacher', 'scholar'])) {
-            return redirect()->route('home')->with('error', 'هذه الصفحة مخصصة للخطباء والعلماء فقط');
+        // التحقق من صلاحية المستخدم باستخدام Spatie
+        if (!$user->hasAnyRole(['admin', 'preacher', 'scholar', 'data_entry']) && !$user->can('create_lectures')) {
+            return redirect()->route('home')->with('error', 'هذه الصفحة مخصصة للخطباء والعلماء ومدخلي البيانات فقط');
         }
 
         return view('lectures.create', compact('user'));
@@ -31,8 +31,8 @@ class LectureManagementController extends Controller
     {
         $user = Auth::user();
 
-        // التحقق من صلاحية المستخدم
-        if (!in_array($user->user_type, ['admin', 'preacher', 'scholar'])) {
+        // التحقق من صلاحية المستخدم باستخدام Spatie
+        if (!$user->hasAnyRole(['admin', 'preacher', 'scholar', 'data_entry']) && !$user->can('create_lectures')) {
             return redirect()->route('home')->with('error', 'غير مصرح لك بإنشاء محاضرات');
         }
 
@@ -68,7 +68,7 @@ class LectureManagementController extends Controller
         $lecture->speaker_id = $user->id;
 
         // تحديد حالة النشر حسب دور المستخدم
-        if (in_array($user->user_type, ['admin'])) {
+        if ($user->hasRole('admin') || $user->can('publish_lectures')) {
             $lecture->status = 'scheduled'; // منشور مباشرة
             $lecture->is_published = true;
         } else {
@@ -98,7 +98,7 @@ class LectureManagementController extends Controller
     {
         $user = Auth::user();
 
-        if (!in_array($user->user_type, ['admin', 'preacher', 'scholar'])) {
+        if (!$user->hasAnyRole(['admin', 'preacher', 'scholar', 'data_entry'])) {
             return redirect()->route('home')->with('error', 'غير مصرح لك بالوصول لهذه الصفحة');
         }
 
@@ -117,7 +117,7 @@ class LectureManagementController extends Controller
         $user = Auth::user();
         $lecture = Lecture::where('speaker_id', $user->id)->findOrFail($id);
 
-        if (!in_array($user->user_type, ['admin', 'preacher', 'scholar'])) {
+        if (!$user->hasAnyRole(['admin', 'preacher', 'scholar']) && !$user->can('edit_lectures')) {
             return redirect()->route('home')->with('error', 'غير مصرح لك بتعديل هذه المحاضرة');
         }
 
@@ -132,7 +132,7 @@ class LectureManagementController extends Controller
         $user = Auth::user();
         $lecture = Lecture::where('speaker_id', $user->id)->findOrFail($id);
 
-        if (!in_array($user->user_type, ['admin', 'preacher', 'scholar'])) {
+        if (!$user->hasAnyRole(['admin', 'preacher', 'scholar']) && !$user->can('edit_lectures')) {
             return redirect()->route('home')->with('error', 'غير مصرح لك بتعديل هذه المحاضرة');
         }
 

@@ -88,8 +88,19 @@
                         </td>
                         <td>{{ $user->email }}</td>
                         <td>
-                            <span class="badge bg-{{ $user->role == 'admin' ? 'danger' : ($user->role == 'scholar' ? 'success' : 'secondary') }}">
-                                {{ $user->role == 'admin' ? 'مدير' : ($user->role == 'scholar' ? 'عالم' : 'عضو') }}
+                            @php
+                                $roleName = $user->getRoleName();
+                                $roleClass = match($user->roles->first()?->name ?? 'member') {
+                                    'admin' => 'danger',
+                                    'scholar' => 'success',
+                                    'preacher' => 'info',
+                                    'thinker' => 'warning',
+                                    'data_entry' => 'primary',
+                                    default => 'secondary'
+                                };
+                            @endphp
+                            <span class="badge bg-{{ $roleClass }}">
+                                {{ $roleName }}
                             </span>
                         </td>
                         <td>

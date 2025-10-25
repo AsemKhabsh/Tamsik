@@ -32,10 +32,12 @@ class PreacherMiddleware
                 ->with('error', 'حسابك غير نشط. يرجى التواصل مع الإدارة.');
         }
 
-        // التحقق من أن المستخدم خطيب أو عالم أو مفكر أو مدخل بيانات
-        if (!in_array($user->user_type, ['preacher', 'scholar', 'thinker', 'data_entry', 'admin'])) {
+        // التحقق من أن المستخدم لديه أحد الأدوار المسموحة باستخدام Spatie
+        $allowedRoles = ['admin', 'scholar', 'preacher', 'thinker', 'data_entry'];
+
+        if (!$user->hasAnyRole($allowedRoles)) {
             return response()->view('errors.403', [
-                'message' => 'هذه الصفحة مخصصة للخطباء والعلماء والمفكرين ومدخلي البيانات فقط. نوع حسابك الحالي: ' . ($user->user_type ?? 'غير محدد')
+                'message' => 'هذه الصفحة مخصصة للمديرين والعلماء والخطباء والمفكرين ومدخلي البيانات فقط. دورك الحالي: ' . ($user->getRoleName() ?? 'غير محدد')
             ], 403);
         }
 

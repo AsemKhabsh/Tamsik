@@ -64,24 +64,103 @@
     </div>
 </div>
 
-<!-- تنبيه المقالات المعلقة -->
-@if(isset($stats['pending_articles']) && $stats['pending_articles'] > 0)
+<!-- صف ثاني للإحصائيات -->
 <div class="row mb-4">
-    <div class="col-12">
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="stats-card">
+            <div class="d-flex align-items-center">
+                <div class="icon bg-info">
+                    <i class="fas fa-question-circle"></i>
+                </div>
+                <div class="ms-3">
+                    <h3 class="mb-0">{{ number_format($stats['total_fatwas'] ?? 0) }}</h3>
+                    <p class="text-muted mb-0">إجمالي الفتاوى</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="stats-card">
+            <div class="d-flex align-items-center">
+                <div class="icon bg-warning">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="ms-3">
+                    <h3 class="mb-0">{{ number_format($stats['pending_fatwas'] ?? 0) }}</h3>
+                    <p class="text-muted mb-0">فتاوى قيد المراجعة</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="stats-card">
+            <div class="d-flex align-items-center">
+                <div class="icon bg-danger">
+                    <i class="fas fa-newspaper"></i>
+                </div>
+                <div class="ms-3">
+                    <h3 class="mb-0">{{ number_format($stats['pending_articles'] ?? 0) }}</h3>
+                    <p class="text-muted mb-0">مقالات معلقة</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="stats-card">
+            <div class="d-flex align-items-center">
+                <div class="icon bg-success">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="ms-3">
+                    <h3 class="mb-0">{{ number_format($stats['published_sermons']) }}</h3>
+                    <p class="text-muted mb-0">خطب منشورة</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- تنبيهات المحتوى المعلق -->
+@if((isset($stats['pending_articles']) && $stats['pending_articles'] > 0) || (isset($stats['pending_fatwas']) && $stats['pending_fatwas'] > 0))
+<div class="row mb-4">
+    @if(isset($stats['pending_articles']) && $stats['pending_articles'] > 0)
+    <div class="col-lg-6 mb-3">
         <div class="alert alert-warning d-flex align-items-center" role="alert">
             <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
             <div class="flex-grow-1">
-                <h5 class="alert-heading mb-1">مقالات تحتاج إلى مراجعة!</h5>
+                <h6 class="alert-heading mb-1">مقالات تحتاج إلى مراجعة!</h6>
                 <p class="mb-0">
-                    يوجد <strong>{{ $stats['pending_articles'] }}</strong> مقال(ات) قيد المراجعة تحتاج إلى موافقتك.
+                    يوجد <strong>{{ $stats['pending_articles'] }}</strong> مقال(ات) قيد المراجعة.
                 </p>
             </div>
-            <a href="{{ route('admin.articles.pending') }}" class="btn btn-warning">
+            <a href="{{ route('admin.articles.pending') }}" class="btn btn-warning btn-sm">
                 <i class="fas fa-eye me-2"></i>
-                مراجعة المقالات
+                مراجعة
             </a>
         </div>
     </div>
+    @endif
+
+    @if(isset($stats['pending_fatwas']) && $stats['pending_fatwas'] > 0)
+    <div class="col-lg-6 mb-3">
+        <div class="alert alert-info d-flex align-items-center" role="alert">
+            <i class="fas fa-question-circle fa-2x me-3"></i>
+            <div class="flex-grow-1">
+                <h6 class="alert-heading mb-1">فتاوى تحتاج إلى مراجعة!</h6>
+                <p class="mb-0">
+                    يوجد <strong>{{ $stats['pending_fatwas'] }}</strong> فتوى قيد المراجعة.
+                </p>
+            </div>
+            <a href="{{ route('admin.fatwas') }}?status=pending" class="btn btn-info btn-sm">
+                <i class="fas fa-eye me-2"></i>
+                مراجعة
+            </a>
+        </div>
+    </div>
+    @endif
 </div>
 @endif
 

@@ -23,14 +23,17 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'user_type',
+        'user_type', // التصنيف الوظيفي (member, preacher, scholar, thinker, data_entry)
         'bio',
         'specialization',
         'location',
         'is_active',
         'avatar',
         'phone',
-        'join_date'
+        'join_date',
+        'title',
+        'image',
+        'education'
     ];
 
     /**
@@ -118,6 +121,24 @@ class User extends Authenticatable
     }
 
     // التحقق من كون المستخدم خطيباً
+    public function isPreacher()
+    {
+        return $this->hasRole('preacher');
+    }
+
+    // التحقق من كون المستخدم مفكراً
+    public function isThinker()
+    {
+        return $this->hasRole('thinker');
+    }
+
+    // التحقق من كون المستخدم مدخل بيانات
+    public function isDataEntry()
+    {
+        return $this->hasRole('data_entry');
+    }
+
+    // التحقق من كون المستخدم عضواً عادياً
     public function isMember()
     {
         return $this->hasRole('member');
@@ -129,12 +150,29 @@ class User extends Authenticatable
         $roleNames = [
             'admin' => 'مشرف المنصة',
             'scholar' => 'عالم',
-            'member' => 'خطيب',
+            'preacher' => 'خطيب',
+            'thinker' => 'مفكر',
+            'data_entry' => 'مدخل بيانات',
+            'member' => 'عضو',
             'guest' => 'زائر'
         ];
 
         $role = $this->roles->first();
         return $role ? ($roleNames[$role->name] ?? $role->name) : 'زائر';
+    }
+
+    // الحصول على نوع المستخدم بالعربي
+    public function getUserTypeName()
+    {
+        $typeNames = [
+            'member' => 'عضو عادي',
+            'preacher' => 'خطيب',
+            'scholar' => 'عالم',
+            'thinker' => 'مفكر',
+            'data_entry' => 'مدخل بيانات'
+        ];
+
+        return $typeNames[$this->user_type] ?? 'غير محدد';
     }
 
     // الحصول على الصورة الشخصية

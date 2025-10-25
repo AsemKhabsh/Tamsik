@@ -51,7 +51,7 @@
                 <div class="col-md-2">
                     <select name="author" class="form-select">
                         <option value="">جميع المؤلفين</option>
-                        @foreach(\App\Models\User::where('role', 'scholar')->orWhere('role', 'admin')->get() as $author)
+                        @foreach(\App\Models\User::role(['scholar', 'admin', 'preacher', 'data_entry'])->get() as $author)
                             <option value="{{ $author->id }}" {{ request('author') == $author->id ? 'selected' : '' }}>
                                 {{ $author->name }}
                             </option>

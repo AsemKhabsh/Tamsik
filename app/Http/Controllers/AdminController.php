@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\Sermon;
 use App\Models\Lecture;
 use App\Models\Article;
+use App\Models\Fatwa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -28,7 +29,9 @@ class AdminController extends Controller
             'total_sermons' => Sermon::count(),
             'total_lectures' => Lecture::count(),
             'total_articles' => Article::count() ?? 0,
+            'total_fatwas' => Fatwa::count() ?? 0,
             'pending_articles' => Article::where('status', 'pending')->count() ?? 0,
+            'pending_fatwas' => Fatwa::where('is_published', false)->count() ?? 0,
             'published_sermons' => Sermon::where('is_published', true)->count(),
             'draft_sermons' => Sermon::where('is_published', false)->count(),
             'recent_users' => User::latest()->take(5)->get(),
@@ -60,16 +63,20 @@ class AdminController extends Controller
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
             'role' => 'required|in:admin,scholar,preacher,thinker,data_entry,member',
+            'user_type' => 'nullable|in:member,preacher,scholar,thinker,data_entry',
         ]);
 
-        User::create([
+        // إنشاء المستخدم
+        $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role' => $request->role,
-            'user_type' => $request->role, // تعيين user_type ليطابق role
+            'user_type' => $request->user_type ?? $request->role, // استخدام user_type إذا كان موجوداً، وإلا استخدم role
             'is_active' => $request->has('is_active') ? 1 : 0,
         ]);
+
+        // تعيين الدور باستخدام Spatie
+        $user->assignRole($request->role);
 
         return redirect()->route('admin.users')->with('success', 'تم إنشاء المستخدم بنجاح');
     }
@@ -85,19 +92,24 @@ class AdminController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
             'role' => 'required|in:admin,scholar,preacher,thinker,data_entry,member',
+            'user_type' => 'nullable|in:member,preacher,scholar,thinker,data_entry',
         ]);
 
+        // تحديث بيانات المستخدم
         $user->update([
             'name' => $request->name,
             'email' => $request->email,
-            'role' => $request->role,
-            'user_type' => $request->role, // تعيين user_type ليطابق role
+            'user_type' => $request->user_type ?? $request->role,
             'is_active' => $request->has('is_active') ? 1 : 0,
         ]);
 
+        // تحديث كلمة المرور إذا تم إدخالها
         if ($request->filled('password')) {
             $user->update(['password' => Hash::make($request->password)]);
         }
+
+        // تحديث الدور باستخدام Spatie
+        $user->syncRoles([$request->role]);
 
         return redirect()->route('admin.users')->with('success', 'تم تحديث المستخدم بنجاح');
     }
@@ -125,7 +137,7 @@ class AdminController extends Controller
 
     public function editSermon(Sermon $sermon)
     {
-        $authors = User::where('role', 'scholar')->orWhere('role', 'admin')->get();
+        $authors = User::role(['scholar', 'admin', 'preacher', 'data_entry'])->get();
         return view('admin.sermons.edit', compact('sermon', 'authors'));
     }
 
@@ -184,7 +196,7 @@ class AdminController extends Controller
     public function editLecture(Lecture $lecture)
     {
         $lecture->load('speaker'); // تحميل علاقة المحاضر
-        $speakers = User::where('role', 'scholar')->orWhere('role', 'admin')->get();
+        $speakers = User::role(['scholar', 'admin', 'preacher'])->get();
         return view('admin.lectures.edit', compact('lecture', 'speakers'));
     }
 
@@ -254,7 +266,8 @@ class AdminController extends Controller
      */
     public function scholars()
     {
-        $scholars = User::where('role', 'scholar')->latest()->paginate(20);
+        // استخدام Spatie للحصول على العلماء
+        $scholars = User::role('scholar')->latest()->paginate(20);
         return view('admin.scholars.index', compact('scholars'));
     }
 
@@ -275,8 +288,8 @@ class AdminController extends Controller
             'is_active' => 'boolean',
         ]);
 
-        $data = $request->all();
-        $data['role'] = 'scholar';
+        $data = $request->except(['role', 'password_confirmation']);
+        $data['user_type'] = 'scholar';
         $data['password'] = Hash::make($request->password);
         $data['is_active'] = $request->has('is_active');
 
@@ -284,7 +297,10 @@ class AdminController extends Controller
             $data['image'] = $request->file('image')->store('scholars/images', 'public');
         }
 
-        User::create($data);
+        $user = User::create($data);
+
+        // تعيين دور العالم باستخدام Spatie
+        $user->assignRole('scholar');
 
         return redirect()->route('admin.scholars')->with('success', 'تم إنشاء العالم بنجاح');
     }
@@ -390,5 +406,133 @@ class AdminController extends Controller
         $article->delete();
 
         return redirect()->back()->with('success', 'تم حذف المقال بنجاح');
+    }
+
+    /**
+     * ==========================================
+     * إدارة الفتاوى
+     * ==========================================
+     */
+
+    /**
+     * عرض قائمة الفتاوى
+     */
+    public function fatwas()
+    {
+        $fatwas = Fatwa::with(['scholar'])
+            ->latest()
+            ->paginate(20);
+
+        return view('admin.fatwas.index', compact('fatwas'));
+    }
+
+    /**
+     * عرض صفحة إضافة فتوى جديدة
+     */
+    public function createFatwa()
+    {
+        // جلب قائمة العلماء
+        $scholars = User::role('scholar')
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get();
+
+        return view('admin.fatwas.create', compact('scholars'));
+    }
+
+    /**
+     * حفظ فتوى جديدة
+     */
+    public function storeFatwa(Request $request)
+    {
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'question' => 'required|string',
+            'answer' => 'required|string',
+            'category' => 'required|string|in:worship,transactions,family,contemporary,ethics,beliefs,jurisprudence,quran,hadith',
+            'scholar_id' => 'required|exists:users,id',
+            'tags' => 'nullable|string',
+            'references' => 'nullable|string',
+            'is_published' => 'boolean',
+            'is_featured' => 'boolean',
+        ]);
+
+        $tags = $request->tags ? array_map('trim', explode(',', $request->tags)) : [];
+        $references = $request->references ? array_map('trim', explode("\n", $request->references)) : [];
+
+        Fatwa::create([
+            'title' => $request->title,
+            'question' => $request->question,
+            'answer' => $request->answer,
+            'category' => $request->category,
+            'scholar_id' => $request->scholar_id,
+            'tags' => $tags,
+            'references' => $references,
+            'is_published' => $request->has('is_published') ? 1 : 0,
+            'is_featured' => $request->has('is_featured') ? 1 : 0,
+            'published_at' => $request->has('is_published') ? now() : null,
+        ]);
+
+        return redirect()->route('admin.fatwas')->with('success', 'تم إضافة الفتوى بنجاح');
+    }
+
+    /**
+     * عرض صفحة تعديل فتوى
+     */
+    public function editFatwa(Fatwa $fatwa)
+    {
+        // جلب قائمة العلماء
+        $scholars = User::where('role', 'scholar')
+            ->orWhere('user_type', 'scholar')
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get();
+
+        return view('admin.fatwas.edit', compact('fatwa', 'scholars'));
+    }
+
+    /**
+     * تحديث فتوى
+     */
+    public function updateFatwa(Request $request, Fatwa $fatwa)
+    {
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'question' => 'required|string',
+            'answer' => 'required|string',
+            'category' => 'required|string|in:worship,transactions,family,contemporary,ethics,beliefs,jurisprudence,quran,hadith',
+            'scholar_id' => 'required|exists:users,id',
+            'tags' => 'nullable|string',
+            'references' => 'nullable|string',
+            'is_published' => 'boolean',
+            'is_featured' => 'boolean',
+        ]);
+
+        $tags = $request->tags ? array_map('trim', explode(',', $request->tags)) : [];
+        $references = $request->references ? array_map('trim', explode("\n", $request->references)) : [];
+
+        $fatwa->update([
+            'title' => $request->title,
+            'question' => $request->question,
+            'answer' => $request->answer,
+            'category' => $request->category,
+            'scholar_id' => $request->scholar_id,
+            'tags' => $tags,
+            'references' => $references,
+            'is_published' => $request->has('is_published') ? 1 : 0,
+            'is_featured' => $request->has('is_featured') ? 1 : 0,
+            'published_at' => $request->has('is_published') && !$fatwa->published_at ? now() : $fatwa->published_at,
+        ]);
+
+        return redirect()->route('admin.fatwas')->with('success', 'تم تحديث الفتوى بنجاح');
+    }
+
+    /**
+     * حذف فتوى
+     */
+    public function deleteFatwa(Fatwa $fatwa)
+    {
+        $fatwa->delete();
+        return redirect()->route('admin.fatwas')->with('success', 'تم حذف الفتوى بنجاح');
     }
 }

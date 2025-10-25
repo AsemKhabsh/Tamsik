@@ -113,7 +113,7 @@
                                     </td>
                                     <td>
                                         @if($article->category)
-                                            <span class="badge bg-info">{{ $article->category->name }}</span>
+                                            <span class="badge bg-info">{{ $article->category }}</span>
                                         @else
                                             <span class="badge bg-secondary">غير محدد</span>
                                         @endif

@@ -12,8 +12,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
-            AdminSeeder::class,
-            UserSeeder::class,
+            UserSeeder::class, // يحتوي على جميع المستخدمين بما فيهم المدير
             SermonSeeder::class,
             LectureSeeder::class,
             ArticleSeeder::class,

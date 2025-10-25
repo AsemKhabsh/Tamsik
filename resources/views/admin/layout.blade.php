@@ -235,6 +235,14 @@
                             @endif
                         </a>
 
+                        <a class="nav-link {{ request()->routeIs('admin.fatwas*') ? 'active' : '' }}" href="{{ route('admin.fatwas') }}">
+                            <i class="fas fa-question-circle"></i>
+                            الفتاوى
+                            @if(isset($stats['pending_fatwas']) && $stats['pending_fatwas'] > 0)
+                                <span class="badge bg-info text-dark ms-2">{{ $stats['pending_fatwas'] }}</span>
+                            @endif
+                        </a>
+
                         <div class="nav-link">
                             <hr style="border-color: rgba(255,255,255,0.2);">
                         </div>

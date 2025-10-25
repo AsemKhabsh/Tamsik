@@ -27,10 +27,10 @@ class SermonPolicy
             return true;
         }
 
-        // المؤلف والمشرفون يمكنهم عرض الخطب غير المنشورة
+        // المؤلف والمشرفون والعلماء يمكنهم عرض الخطب غير المنشورة
         if ($user) {
             return $user->id === $sermon->author_id ||
-                   in_array($user->user_type, ['admin', 'scholar']);
+                   $user->hasAnyRole(['admin', 'scholar']);
         }
 
         return false;
@@ -41,8 +41,9 @@ class SermonPolicy
      */
     public function create(User $user): bool
     {
-        // فقط المشرفون والعلماء والخطباء يمكنهم إنشاء خطب
-        return in_array($user->user_type, ['admin', 'scholar', 'preacher']);
+        // فقط المشرفون والعلماء والخطباء ومدخلي البيانات يمكنهم إنشاء خطب
+        return $user->hasAnyRole(['admin', 'scholar', 'preacher', 'data_entry']) ||
+               $user->can('create_sermons');
     }
 
     /**
@@ -50,9 +51,10 @@ class SermonPolicy
      */
     public function update(User $user, Sermon $sermon): bool
     {
-        // المؤلف أو المشرفون يمكنهم تعديل الخطبة
+        // المؤلف أو المشرفون والعلماء يمكنهم تعديل الخطبة
         return $user->id === $sermon->author_id ||
-               in_array($user->user_type, ['admin', 'scholar']);
+               $user->hasAnyRole(['admin', 'scholar']) ||
+               $user->can('edit_sermons');
     }
 
     /**
@@ -62,7 +64,8 @@ class SermonPolicy
     {
         // المؤلف أو المشرفون يمكنهم حذف الخطبة
         return $user->id === $sermon->author_id ||
-               $user->user_type === 'admin';
+               $user->hasRole('admin') ||
+               $user->can('delete_sermons');
     }
 
     /**
@@ -71,7 +74,7 @@ class SermonPolicy
     public function restore(User $user, Sermon $sermon): bool
     {
         // فقط المشرفون يمكنهم استعادة الخطب المحذوفة
-        return $user->user_type === 'admin';
+        return $user->hasRole('admin');
     }
 
     /**
@@ -80,6 +83,6 @@ class SermonPolicy
     public function forceDelete(User $user, Sermon $sermon): bool
     {
         // فقط المشرفون يمكنهم الحذف النهائي
-        return $user->user_type === 'admin';
+        return $user->hasRole('admin');
     }
 }

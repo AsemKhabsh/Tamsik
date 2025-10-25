@@ -78,12 +78,15 @@
                                 <div class="form-group mb-3">
                                     <label for="role" class="form-label">الدور *</label>
                                     <select class="form-control" id="role" name="role" required>
-                                        <option value="admin" {{ old('role', $user->role) == 'admin' ? 'selected' : '' }}>مدير</option>
-                                        <option value="scholar" {{ old('role', $user->role) == 'scholar' ? 'selected' : '' }}>عالم</option>
-                                        <option value="preacher" {{ old('role', $user->role) == 'preacher' ? 'selected' : '' }}>خطيب</option>
-                                        <option value="thinker" {{ old('role', $user->role) == 'thinker' ? 'selected' : '' }}>مفكر</option>
-                                        <option value="data_entry" {{ old('role', $user->role) == 'data_entry' ? 'selected' : '' }}>مدخل بيانات</option>
-                                        <option value="member" {{ old('role', $user->role) == 'member' ? 'selected' : '' }}>عضو</option>
+                                        @php
+                                            $currentRole = $user->roles->first()?->name ?? 'member';
+                                        @endphp
+                                        <option value="admin" {{ old('role', $currentRole) == 'admin' ? 'selected' : '' }}>مدير</option>
+                                        <option value="scholar" {{ old('role', $currentRole) == 'scholar' ? 'selected' : '' }}>عالم</option>
+                                        <option value="preacher" {{ old('role', $currentRole) == 'preacher' ? 'selected' : '' }}>خطيب</option>
+                                        <option value="thinker" {{ old('role', $currentRole) == 'thinker' ? 'selected' : '' }}>مفكر</option>
+                                        <option value="data_entry" {{ old('role', $currentRole) == 'data_entry' ? 'selected' : '' }}>مدخل بيانات</option>
+                                        <option value="member" {{ old('role', $currentRole) == 'member' ? 'selected' : '' }}>عضو</option>
                                     </select>
                                     @error('role')
                                         <div class="text-danger">{{ $message }}</div>
