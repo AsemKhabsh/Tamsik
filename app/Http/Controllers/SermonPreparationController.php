@@ -21,8 +21,8 @@ class SermonPreparationController extends Controller
             return redirect()->route('login')->with('error', 'يجب تسجيل الدخول أولاً');
         }
 
-        // التحقق من صلاحية المستخدم
-        if (!in_array($user->user_type, ['preacher', 'scholar', 'admin', 'thinker', 'data_entry'])) {
+        // التحقق من صلاحية المستخدم باستخدام Spatie Roles
+        if (!$user->hasAnyRole(['preacher', 'scholar', 'admin', 'thinker', 'data_entry'])) {
             return redirect()->route('home')->with('error', 'هذه الصفحة مخصصة للخطباء والعلماء فقط');
         }
 
@@ -50,8 +50,8 @@ class SermonPreparationController extends Controller
     {
         $user = Auth::user();
 
-        // التحقق من صلاحية المستخدم
-        if (!in_array($user->user_type, ['admin', 'preacher', 'scholar'])) {
+        // التحقق من صلاحية المستخدم باستخدام Spatie Roles
+        if (!$user->hasAnyRole(['admin', 'preacher', 'scholar'])) {
             return redirect()->route('home')->with('error', 'غير مصرح لك بإنشاء خطب');
         }
 
@@ -150,7 +150,8 @@ class SermonPreparationController extends Controller
     {
         $user = Auth::user();
 
-        if (!in_array($user->user_type, ['admin', 'preacher', 'scholar'])) {
+        // التحقق من صلاحية المستخدم باستخدام Spatie Roles
+        if (!$user->hasAnyRole(['admin', 'preacher', 'scholar'])) {
             return redirect()->route('home')->with('error', 'غير مصرح لك بالوصول لهذه الصفحة');
         }
 
@@ -169,7 +170,8 @@ class SermonPreparationController extends Controller
         $user = Auth::user();
         $sermon = Sermon::where('author_id', $user->id)->findOrFail($id);
 
-        if (!in_array($user->user_type, ['admin', 'preacher', 'scholar'])) {
+        // التحقق من صلاحية المستخدم باستخدام Spatie Roles
+        if (!$user->hasAnyRole(['admin', 'preacher', 'scholar'])) {
             return redirect()->route('home')->with('error', 'غير مصرح لك بتعديل هذه الخطبة');
         }
 
@@ -184,7 +186,8 @@ class SermonPreparationController extends Controller
         $user = Auth::user();
         $sermon = Sermon::where('author_id', $user->id)->findOrFail($id);
 
-        if (!in_array($user->user_type, ['admin', 'preacher', 'scholar'])) {
+        // التحقق من صلاحية المستخدم باستخدام Spatie Roles
+        if (!$user->hasAnyRole(['admin', 'preacher', 'scholar'])) {
             return redirect()->route('home')->with('error', 'غير مصرح لك بتعديل هذه الخطبة');
         }
 
