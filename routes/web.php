@@ -67,6 +67,12 @@ Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap')
 Route::get('/sermons', [SermonController::class, 'index'])->name('sermons.index');
 Route::get('/sermons/create', [SermonController::class, 'create'])->name('sermons.create')->middleware('auth');
 Route::post('/sermons', [SermonController::class, 'store'])->name('sermons.store')->middleware('auth');
+
+// مسارات إعداد الخطب - يجب أن تأتي قبل /sermons/{id} لتجنب التعارض
+Route::middleware(['auth', 'preacher'])->group(function () {
+    Route::get('/sermons/prepare', [SermonPreparationController::class, 'create'])->name('sermons.prepare');
+});
+
 Route::get('/sermons/{id}', [SermonController::class, 'show'])->name('sermons.show');
 Route::get('/sermons/{id}/download', [SermonController::class, 'download'])->name('sermons.download');
 
@@ -138,9 +144,8 @@ Route::middleware('auth')->group(function () {
 });
 
 // مسارات إعداد الخطب (للخطباء والعلماء والأدمن)
-Route::middleware('preacher')->group(function () {
-    // إدارة الخطب
-    Route::get('/sermons/prepare', [SermonPreparationController::class, 'create'])->name('sermons.prepare');
+Route::middleware(['auth', 'preacher'])->group(function () {
+    // إدارة الخطب - ملاحظة: /sermons/prepare تم نقله للأعلى لتجنب التعارض مع /sermons/{id}
     Route::get('/prepare-sermon', [SermonPreparationController::class, 'create'])->name('sermon.prepare');
     Route::post('/prepare-sermon', [SermonPreparationController::class, 'store'])->name('sermon.store');
     Route::get('/my-sermons', [SermonPreparationController::class, 'mySermons'])->name('sermon.my');
