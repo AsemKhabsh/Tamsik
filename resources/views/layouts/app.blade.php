@@ -234,7 +234,8 @@
                                     إنشاء محتوى
                                 </a>
                                 <ul class="dropdown-menu" aria-labelledby="contentDropdown">
-                                    @if(auth()->user()->hasAnyRole(['admin', 'preacher']))
+                                    {{-- ملاحظة: العالم (scholar) لديه جميع صلاحيات الخطيب (preacher) --}}
+                                    @if(auth()->user()->hasAnyRole(['admin', 'scholar', 'preacher']))
                                         <li>
                                             <a class="dropdown-item" href="{{ route('sermons.prepare') }}">
                                                 <i class="fas fa-pen me-2"></i>
@@ -254,7 +255,8 @@
 
                                     <li><hr class="dropdown-divider"></li>
 
-                                    @if(auth()->user()->hasAnyRole(['admin', 'preacher']))
+                                    {{-- ملاحظة: العالم (scholar) لديه جميع صلاحيات الخطيب (preacher) --}}
+                                    @if(auth()->user()->hasAnyRole(['admin', 'scholar', 'preacher']))
                                         <li>
                                             <a class="dropdown-item" href="{{ route('sermon.my') }}">
                                                 <i class="fas fa-book-open me-2"></i>
