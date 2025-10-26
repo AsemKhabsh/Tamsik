@@ -226,7 +226,8 @@
                     </li>
 
                     @auth
-                        @if(auth()->user()->hasAnyRole(['admin', 'preacher', 'scholar', 'thinker', 'data_entry']))
+                        {{-- قائمة إنشاء المحتوى: فقط للمسؤول والعالم والخطيب --}}
+                        @if(auth()->user()->hasAnyRole(['admin', 'scholar', 'preacher']))
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" href="#" id="contentDropdown" role="button"
                                    data-bs-toggle="dropdown" aria-expanded="false">
