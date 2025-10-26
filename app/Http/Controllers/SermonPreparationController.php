@@ -51,7 +51,8 @@ class SermonPreparationController extends Controller
         $user = Auth::user();
 
         // التحقق من صلاحية المستخدم باستخدام Spatie Roles
-        if (!$user->hasAnyRole(['admin', 'preacher', 'scholar'])) {
+        // ملاحظة: العالم (scholar) لديه جميع صلاحيات الخطيب (preacher) + صلاحيات إضافية
+        if (!$user->hasAnyRole(['admin', 'scholar', 'preacher'])) {
             return redirect()->route('home')->with('error', 'غير مصرح لك بإنشاء خطب');
         }
 
@@ -151,7 +152,8 @@ class SermonPreparationController extends Controller
         $user = Auth::user();
 
         // التحقق من صلاحية المستخدم باستخدام Spatie Roles
-        if (!$user->hasAnyRole(['admin', 'preacher', 'scholar'])) {
+        // ملاحظة: العالم (scholar) لديه جميع صلاحيات الخطيب (preacher) + صلاحيات إضافية
+        if (!$user->hasAnyRole(['admin', 'scholar', 'preacher'])) {
             return redirect()->route('home')->with('error', 'غير مصرح لك بالوصول لهذه الصفحة');
         }
 
@@ -171,7 +173,8 @@ class SermonPreparationController extends Controller
         $sermon = Sermon::where('author_id', $user->id)->findOrFail($id);
 
         // التحقق من صلاحية المستخدم باستخدام Spatie Roles
-        if (!$user->hasAnyRole(['admin', 'preacher', 'scholar'])) {
+        // ملاحظة: العالم (scholar) لديه جميع صلاحيات الخطيب (preacher) + صلاحيات إضافية
+        if (!$user->hasAnyRole(['admin', 'scholar', 'preacher'])) {
             return redirect()->route('home')->with('error', 'غير مصرح لك بتعديل هذه الخطبة');
         }
 
@@ -187,7 +190,8 @@ class SermonPreparationController extends Controller
         $sermon = Sermon::where('author_id', $user->id)->findOrFail($id);
 
         // التحقق من صلاحية المستخدم باستخدام Spatie Roles
-        if (!$user->hasAnyRole(['admin', 'preacher', 'scholar'])) {
+        // ملاحظة: العالم (scholar) لديه جميع صلاحيات الخطيب (preacher) + صلاحيات إضافية
+        if (!$user->hasAnyRole(['admin', 'scholar', 'preacher'])) {
             return redirect()->route('home')->with('error', 'غير مصرح لك بتعديل هذه الخطبة');
         }
 
